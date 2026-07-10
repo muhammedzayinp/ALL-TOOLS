@@ -1,805 +1,657 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛸 ToolShed Neo - 200+ Futuristic Tools</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛸 ToolShed Neo · 200+ futuristic tools</title>
+  <!-- Tailwind + Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #06060c;
+      color: #f0f2fa;
+      min-height: 100vh;
+    }
+    /* floating orbs */
+    .bg-orb {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.45;
+      animation: floatOrb 22s ease-in-out infinite alternate;
+    }
+    .orb:nth-child(1) {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, #6366f1, transparent 75%);
+      top: -12%; left: -12%;
+    }
+    .orb:nth-child(2) {
+      width: 450px; height: 450px;
+      background: radial-gradient(circle, #ec4899, transparent 75%);
+      bottom: -10%; right: -10%;
+      animation-delay: -6s;
+    }
+    .orb:nth-child(3) {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, #14b8a6, transparent 75%);
+      top: 45%; left: 45%;
+      transform: translate(-50%, -50%);
+      animation-delay: -12s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(70px, -40px) scale(1.2); }
+      100% { transform: translate(-60px, 60px) scale(0.85); }
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0f;
-            color: #ffffff;
-            min-height: 100vh;
-        }
+    /* glass header */
+    .glass-header {
+      background: rgba(6,6,12,0.65);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 0;
+    }
 
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
+    /* cards — futuristic glassmorphism */
+    .tool-card {
+      background: rgba(255,255,255,0.025);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 18px 12px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      opacity: 0;
+      animation: fadeUp 0.45s ease forwards;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .tool-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      border-color: rgba(99,102,241,0.4);
+      box-shadow: 0 16px 48px rgba(99,102,241,0.15);
+      background: rgba(255,255,255,0.045);
+    }
+    .tool-card .icon {
+      font-size: 2.2rem;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 0 6px rgba(99,102,241,0.2));
+    }
+    .tool-card .name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+    .tool-card .desc {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+    }
+    .tool-card .badge {
+      font-size: 0.55rem;
+      font-weight: 600;
+      padding: 2px 12px;
+      border-radius: 40px;
+      background: rgba(99,102,241,0.12);
+      color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.15);
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .tool-card .fav-star {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.15);
+      transition: 0.2s;
+    }
+    .tool-card .fav-star.active {
+      color: #fbbf24;
+      text-shadow: 0 0 12px rgba(251,191,36,0.3);
+    }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: floatOrb 20s ease-in-out infinite alternate;
-            opacity: 0.5;
-        }
+    @keyframes fadeUp {
+      0% { opacity: 0; transform: translateY(24px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
 
-        .orb:nth-child(1) {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, #6366f1, transparent 70%);
-            top: -10%;
-            left: -10%;
-        }
-        .orb:nth-child(2) {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, #ec4899, transparent 70%);
-            bottom: -10%;
-            right: -10%;
-            animation-delay: -5s;
-        }
-        .orb:nth-child(3) {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, #14b8a6, transparent 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
-        }
+    /* category tabs */
+    .category-tab {
+      padding: 6px 18px;
+      border-radius: 60px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.05);
+      white-space: nowrap;
+      transition: all 0.25s;
+      flex-shrink: 0;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+    .category-tab:hover {
+      color: #fff;
+      border-color: rgba(99,102,241,0.3);
+      background: rgba(255,255,255,0.06);
+    }
+    .category-tab.active {
+      color: #fff;
+      border-color: #818cf8;
+      background: rgba(99,102,241,0.15);
+      box-shadow: 0 0 20px rgba(99,102,241,0.05);
+    }
+    .category-tab .count {
+      background: rgba(99,102,241,0.15);
+      padding: 0 8px;
+      border-radius: 30px;
+      font-size: 0.6rem;
+      margin-left: 5px;
+      color: rgba(255,255,255,0.5);
+    }
 
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, -50px) scale(1.2); }
-            100% { transform: translate(-80px, 80px) scale(0.8); }
-        }
+    .search-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 60px;
+      padding: 10px 22px;
+      color: white;
+      width: 100%;
+      max-width: 400px;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .search-box::placeholder { color: rgba(255,255,255,0.25); }
+    .search-box:focus { outline: none; border-color: #818cf8; background: rgba(255,255,255,0.06); }
 
-        .glass-header {
-            background: rgba(10, 10, 15, 0.7);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 12px 0;
-        }
+    .stats-bar {
+      background: rgba(255,255,255,0.025);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 18px;
+      padding: 12px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .stat-item {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .stat-item strong { color: white; font-weight: 600; }
+    .stat-item .live { color: #34d399; animation: pulse 2s infinite; }
 
-        .tool-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 20px 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            animation: fadeUp 0.4s ease forwards;
-            opacity: 0;
-        }
+    @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
 
-        .tool-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
-        }
+    .scroll-categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 14px 0;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll-categories::-webkit-scrollbar { height: 3px; }
+    .scroll-categories::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 20px; }
 
-        .tool-card .icon {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 8px;
-        }
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(10,10,18,0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 26px;
+      color: white;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.2,0.9,0.3,1.2);
+      z-index: 9999;
+      max-width: 90%;
+      font-weight: 500;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
 
-        .tool-card .name {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #ffffff;
-        }
+    .dark { background: #06060c; }
 
-        .tool-card .desc {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 4px;
-        }
-
-        .tool-card .badge {
-            display: inline-block;
-            font-size: 0.6rem;
-            padding: 2px 10px;
-            border-radius: 20px;
-            background: rgba(99, 102, 241, 0.15);
-            color: rgba(99, 102, 241, 0.8);
-            margin-top: 8px;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        
-        .category-tab {
-            padding: 8px 18px;
-            border-radius: 60px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            white-space: nowrap;
-            transition: all 0.3s;
-            flex-shrink: 0;
-        }
-
-        .category-tab:hover {
-            color: white;
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-
-        .category-tab.active {
-            color: white;
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.15);
-        }
-
-        .category-tab .count {
-            background: rgba(99, 102, 241, 0.2);
-            padding: 1px 8px;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            margin-left: 6px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .search-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 60px;
-            padding: 10px 20px;
-            color: white;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .search-box::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #6366f1;
-        }
-
-        .stats-bar {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 12px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stat-item {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .stat-item strong {
-            color: white;
-        }
-
-        .stat-item .live {
-            color: #10b981;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .scroll-categories {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 4px 0 12px 0;
-            scrollbar-width: thin;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .scroll-categories::-webkit-scrollbar {
-            height: 3px;
-        }
-
-        .scroll-categories::-webkit-scrollbar-thumb {
-            background: #6366f1;
-            border-radius: 10px;
-        }
-
-        #toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(10, 10, 15, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 14px 24px;
-            color: white;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.4s;
-            z-index: 9999;
-            max-width: 90%;
-        }
-
-        #toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .dark {
-            background: #0a0a0f;
-        }
-
-        @media (max-width: 768px) {
-            .tool-card { padding: 14px 10px; }
-            .tool-card .icon { font-size: 1.5rem; }
-            .tool-card .name { font-size: 0.8rem; }
-            .stats-bar { font-size: 0.75rem; padding: 10px 14px; flex-direction: column; align-items: stretch; text-align: center; }
-            .category-tab { font-size: 0.7rem; padding: 6px 12px; }
-            .search-box { max-width: 100%; }
-            .glass-header .flex-wrap { flex-direction: column; align-items: stretch; }
-        }
-
-        @media (max-width: 480px) {
-            .glass-header .flex-wrap { flex-direction: column; align-items: stretch; }
-            .stats-bar { flex-direction: column; align-items: stretch; text-align: center; }
-        }
-    </style>
+    @media (max-width: 640px) {
+      .tool-card { padding: 14px 8px; }
+      .tool-card .icon { font-size: 1.7rem; }
+      .tool-card .name { font-size: 0.75rem; }
+      .stats-bar { flex-direction: column; align-items: stretch; text-align: center; gap: 4px; }
+      .category-tab { font-size: 0.7rem; padding: 5px 12px; }
+      .search-box { max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="bg-animation">
-        <div class="orb"></div>
-        <div class="orb"></div>
-        <div class="orb"></div>
+<!-- floating orbs -->
+<div class="bg-orb"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<!-- toast -->
+<div id="toast">✨ ToolShed Neo ready</div>
+
+<!-- header -->
+<header class="glass-header relative z-10">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-3xl">🛸</span>
+        <div>
+          <h1 class="text-xl font-extrabold text-indigo-300 tracking-tight">ToolShed</h1>
+          <span class="text-[10px] text-gray-400 tracking-widest">⚡ 200+ TOOLS</span>
+        </div>
+      </div>
+
+      <div class="flex-1 max-w-md">
+        <input type="text" id="searchInput" placeholder="🔍  search 200+ tools..." class="search-box" />
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button onclick="toggleDarkMode()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-sm">🌙</button>
+        <button onclick="showFavorites()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-sm relative">
+          ⭐ <span id="favCount" class="text-xs text-indigo-300 font-bold">0</span>
+        </button>
+        <button onclick="resetFilters()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-sm">⟳</button>
+      </div>
     </div>
+  </div>
+</header>
 
-    <div id="toast">✨ Welcome to ToolShed!</div>
+<!-- stats -->
+<div class="max-w-7xl mx-auto px-4 mt-4 relative z-10">
+  <div class="stats-bar">
+    <div class="stat-item">📊 <strong id="totalTools">0</strong> Tools</div>
+    <div class="stat-item">📂 <strong id="totalCategories">0</strong> Categories</div>
+    <div class="stat-item">⭐ <strong id="totalFavorites">0</strong> Favs</div>
+    <div class="stat-item">🕐 <span id="lastUsed">Ready</span></div>
+    <div class="stat-item"><span class="live">●</span> live</div>
+  </div>
+</div>
 
-    <header class="glass-header relative z-10">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🛸</span>
-                    <div>
-                        <h1 class="text-xl font-bold text-indigo-400">ToolShed</h1>
-                        <span class="text-[10px] text-gray-500 tracking-wider">⚡ 200+ Tools</span>
-                    </div>
-                </div>
+<!-- category tabs -->
+<div class="max-w-7xl mx-auto px-4 mt-4 relative z-10">
+  <div class="scroll-categories" id="categoryTabs">
+    <button class="category-tab active" data-category="all" onclick="filterCategory('all')">🎯 All Tools</button>
+  </div>
+</div>
 
-                <div class="flex-1 max-w-md">
-                    <input type="text" id="searchInput" placeholder="🔍 Search 200+ tools..." class="search-box">
-                </div>
+<!-- tool grid -->
+<main class="max-w-7xl mx-auto px-4 py-6 relative z-10">
+  <div id="toolGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+</main>
 
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleDarkMode()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10">🌙</button>
-                    <button onclick="showFavorites()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 relative">
-                        ⭐ <span id="favCount" class="text-xs text-indigo-400">0</span>
-                    </button>
-                    <button onclick="resetFilters()" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10">🔄</button>
-                </div>
-            </div>
+<footer class="text-center py-8 text-gray-500 text-sm border-t border-white/5 relative z-10">
+  🛸 ToolShed Neo 2026 · ⚡ 200+ tools · 🔮 zero backend
+  <br><span class="text-xs opacity-50">made with ❤️ · open source</span>
+</footer>
+
+<script>
+  // ========== TOOL DATA (full) ==========
+  const TOOL_DATA = {
+    categories: [
+      { id:"calculators", name:"Calculators", icon:"fa-calculator", color:"#6366f1", tools:[
+        { id:"bmi", name:"BMI Calculator", desc:"Body mass index", icon:"⚖️", file:"calculators/bmi.html" },
+        { id:"tip", name:"Tip Calculator", desc:"Restaurant tips", icon:"💵", file:"calculators/tip.html" },
+        { id:"loan", name:"EMI Calculator", desc:"Home/car loan", icon:"🏠", file:"calculators/loan.html" },
+        { id:"gst", name:"GST Calculator", desc:"Add/remove GST", icon:"🧾", file:"calculators/gst.html" },
+        { id:"discount", name:"Discount", desc:"Sale price", icon:"🏷️", file:"calculators/discount.html" },
+        { id:"percentage", name:"Percentage", desc:"5 calculations", icon:"💯", file:"calculators/percentage.html" },
+        { id:"age", name:"Age Calculator", desc:"Exact age", icon:"🎂", file:"calculators/age.html" },
+        { id:"date-diff", name:"Date Difference", desc:"Days between", icon:"📅", file:"calculators/date-diff.html" },
+        { id:"speed", name:"Speed Calculator", desc:"Dist/Time/Speed", icon:"🚀", file:"calculators/speed.html" },
+        { id:"fuel", name:"Fuel Cost", desc:"Trip fuel", icon:"⛽", file:"calculators/fuel.html" },
+        { id:"calorie", name:"Calorie Burn", desc:"Exercise", icon:"🔥", file:"calculators/calorie.html" },
+        { id:"water", name:"Water Intake", desc:"Daily need", icon:"💧", file:"calculators/water.html" },
+        { id:"gpa", name:"GPA Calculator", desc:"Grade avg", icon:"🎓", file:"calculators/gpa.html" },
+        { id:"profit", name:"Profit Calc", desc:"Revenue-cost", icon:"📈", file:"calculators/profit.html" },
+        { id:"cagr", name:"CAGR", desc:"Growth rate", icon:"📊", file:"calculators/cagr.html" },
+        { id:"inflation", name:"Inflation", desc:"Future value", icon:"🪙", file:"calculators/inflation.html" },
+        { id:"mortgage", name:"Mortgage", desc:"Home loan", icon:"🏡", file:"calculators/mortgage.html" },
+        { id:"retirement", name:"Retirement", desc:"Savings goal", icon:"🏖️", file:"calculators/retirement.html" },
+        { id:"bmr", name:"BMR", desc:"Metabolic rate", icon:"❤️", file:"calculators/bmr.html" },
+        { id:"sip", name:"SIP Calculator", desc:"Investment", icon:"📈", file:"calculators/sip.html" }
+      ]},
+      { id:"text", name:"Text Tools", icon:"fa-pen-fancy", color:"#10b981", tools:[
+        { id:"word-count", name:"Word Counter", desc:"Words & chars", icon:"📝", file:"text/word-counter.html" },
+        { id:"case-converter", name:"Case Converter", desc:"UPPER/lower", icon:"🔤", file:"text/case-converter.html" },
+        { id:"reverse-text", name:"Reverse Text", desc:"Reverse strings", icon:"🔄", file:"text/reverse-text.html" },
+        { id:"remove-spaces", name:"Remove Spaces", desc:"Extra whitespace", icon:"🧹", file:"text/remove-spaces.html" },
+        { id:"remove-duplicates", name:"Remove Duplicates", desc:"Clean entries", icon:"📋", file:"text/remove-duplicates.html" },
+        { id:"text-sorter", name:"Text Sorter", desc:"A-Z or Z-A", icon:"⬆️", file:"text/text-sorter.html" },
+        { id:"json-validator", name:"JSON Validator", desc:"Check syntax", icon:"✅", file:"text/json-validator.html" },
+        { id:"xml-to-json", name:"XML to JSON", desc:"Convert", icon:"📄", file:"text/xml-to-json.html" },
+        { id:"csv-to-json", name:"CSV to JSON", desc:"Convert CSV", icon:"📊", file:"text/csv-to-json.html" },
+        { id:"regex-tester", name:"Regex Tester", desc:"Test regex", icon:"🎯", file:"text/regex-tester.html" },
+        { id:"lorem-ipsum", name:"Lorem Ipsum", desc:"Dummy text", icon:"📜", file:"text/lorem-ipsum.html" },
+        { id:"slug-generator", name:"Slug Generator", desc:"URL-friendly", icon:"🔗", file:"text/slug-generator.html" },
+        { id:"diff-checker", name:"Diff Checker", desc:"Compare texts", icon:"🔍", file:"text/diff-checker.html" },
+        { id:"html-to-text", name:"HTML to Text", desc:"Strip tags", icon:"🏷️", file:"text/html-to-text.html" },
+        { id:"markdown-preview", name:"Markdown Preview", desc:"Live preview", icon:"📝", file:"text/markdown-preview.html" },
+        { id:"text-repeater", name:"Text Repeater", desc:"Repeat N times", icon:"🔁", file:"text/text-repeater.html" },
+        { id:"acronym-gen", name:"Acronym Generator", desc:"Create acronyms", icon:"🔤", file:"text/acronym-gen.html" },
+        { id:"hashtag-gen", name:"Hashtag Generator", desc:"Generate hashtags", icon:"#️⃣", file:"text/hashtag-gen.html" }
+      ]},
+      { id:"color", name:"Color Tools", icon:"fa-palette", color:"#8b5cf6", tools:[
+        { id:"color-picker", name:"Color Picker", desc:"Pick any color", icon:"🎨", file:"color/color-picker.html" },
+        { id:"hex-to-rgb", name:"HEX to RGB", desc:"Convert", icon:"🔄", file:"color/hex-to-rgb.html" },
+        { id:"gradient-gen", name:"Gradient Generator", desc:"CSS gradients", icon:"🌈", file:"color/gradient-gen.html" },
+        { id:"contrast-check", name:"Contrast Checker", desc:"Accessibility", icon:"👁️", file:"color/contrast-check.html" },
+        { id:"palette-gen", name:"Palette Generator", desc:"Color palettes", icon:"🎨", file:"color/palette-gen.html" },
+        { id:"random-color", name:"Random Color", desc:"Random colors", icon:"🎲", file:"color/random-color.html" },
+        { id:"box-shadow", name:"CSS Box Shadow", desc:"Shadows", icon:"📦", file:"color/box-shadow.html" },
+        { id:"border-radius", name:"CSS Border Radius", desc:"Rounded corners", icon:"⬛", file:"color/border-radius.html" },
+        { id:"text-shadow", name:"CSS Text Shadow", desc:"Text shadows", icon:"✍️", file:"color/text-shadow.html" },
+        { id:"color-name", name:"Color Name Finder", desc:"Find names", icon:"🏷️", file:"color/color-name.html" },
+        { id:"shades-gen", name:"Color Shades", desc:"Light/dark", icon:"🌓", file:"color/shades-gen.html" }
+      ]},
+      { id:"url", name:"URL Tools", icon:"fa-link", color:"#06b6d4", tools:[
+        { id:"url-encode", name:"URL Encoder", desc:"Encode", icon:"🔗", file:"url/url-encode.html" },
+        { id:"url-decode", name:"URL Decoder", desc:"Decode", icon:"🔓", file:"url/url-decode.html" },
+        { id:"url-parse", name:"URL Parser", desc:"Parse components", icon:"📋", file:"url/url-parse.html" },
+        { id:"qr-gen", name:"QR Generator", desc:"Generate QR", icon:"📱", file:"url/qr-gen.html" },
+        { id:"qr-decode", name:"QR Decoder", desc:"Read QR", icon:"📲", file:"url/qr-decode.html" },
+        { id:"domain-age", name:"Domain Age", desc:"Check age", icon:"📅", file:"url/domain-age.html" },
+        { id:"ssl-check", name:"SSL Checker", desc:"Check SSL", icon:"🔒", file:"url/ssl-check.html" },
+        { id:"ip-lookup", name:"IP Lookup", desc:"IP details", icon:"🌐", file:"url/ip-lookup.html" },
+        { id:"site-status", name:"Site Status", desc:"Is it up?", icon:"✅", file:"url/site-status.html" },
+        { id:"meta-gen", name:"Meta Tag Generator", desc:"SEO meta", icon:"📝", file:"url/meta-gen.html" }
+      ]},
+      { id:"date", name:"Date & Time", icon:"fa-clock", color:"#f59e0b", tools:[
+        { id:"current-time", name:"Current Time", desc:"Live clock", icon:"🕐", file:"date/current-time.html" },
+        { id:"stopwatch", name:"Stopwatch", desc:"Precise timer", icon:"⏱️", file:"date/stopwatch.html" },
+        { id:"countdown", name:"Countdown", desc:"Count to date", icon:"⏳", file:"date/countdown.html" },
+        { id:"timezone-conv", name:"Timezone Converter", desc:"Convert zones", icon:"🌍", file:"date/timezone-conv.html" },
+        { id:"unix-timestamp", name:"Unix Timestamp", desc:"Convert", icon:"⌛", file:"date/unix-timestamp.html" },
+        { id:"calendar-gen", name:"Calendar Gen", desc:"Any month", icon:"📆", file:"date/calendar-gen.html" },
+        { id:"world-clock", name:"World Clock", desc:"Multiple zones", icon:"🌏", file:"date/world-clock.html" },
+        { id:"sleep-calc", name:"Sleep Calculator", desc:"Best bedtime", icon:"🌙", file:"date/sleep-calc.html" },
+        { id:"birthday-count", name:"Birthday Countdown", desc:"Days until", icon:"🎂", file:"date/birthday-count.html" },
+        { id:"lunar-cal", name:"Lunar Calendar", desc:"Moon phases", icon:"🌙", file:"date/lunar-cal.html" }
+      ]},
+      { id:"fun", name:"Fun & Games", icon:"fa-gamepad", color:"#ef4444", tools:[
+        { id:"random-num", name:"Random Number", desc:"Random numbers", icon:"🎲", file:"fun/random-num.html" },
+        { id:"dice-roll", name:"Dice Roller", desc:"Roll dice", icon:"🎲", file:"fun/dice-roll.html" },
+        { id:"coin-flip", name:"Coin Flipper", desc:"Heads/tails", icon:"🪙", file:"fun/coin-flip.html" },
+        { id:"random-quote", name:"Random Quote", desc:"Quotes", icon:"💬", file:"fun/random-quote.html" },
+        { id:"random-joke", name:"Random Joke", desc:"Jokes", icon:"😂", file:"fun/random-joke.html" },
+        { id:"random-fact", name:"Random Fact", desc:"Facts", icon:"💡", file:"fun/random-fact.html" },
+        { id:"trivia", name:"Trivia Quiz", desc:"Knowledge", icon:"🧠", file:"fun/trivia.html" },
+        { id:"word-scramble", name:"Word Scramble", desc:"Unscramble", icon:"🔀", file:"fun/word-scramble.html" },
+        { id:"hangman", name:"Hangman", desc:"Classic game", icon:"👤", file:"fun/hangman.html" },
+        { id:"tic-tac-toe", name:"Tic Tac Toe", desc:"2 player", icon:"❌", file:"fun/tic-tac-toe.html" },
+        { id:"memory-game", name:"Memory Game", desc:"Card match", icon:"🃏", file:"fun/memory-game.html" },
+        { id:"typing-test", name:"Typing Speed", desc:"WPM test", icon:"⌨️", file:"fun/typing-test.html" },
+        { id:"reaction-test", name:"Reaction Speed", desc:"Click test", icon:"⚡", file:"fun/reaction-test.html" },
+        { id:"sudoku", name:"Sudoku Solver", desc:"Solve puzzles", icon:"🧩", file:"fun/sudoku.html" },
+        { id:"emoji-picker", name:"Emoji Picker", desc:"Copy emojis", icon:"😊", file:"fun/emoji-picker.html" },
+        { id:"fortune-cookie", name:"Fortune Cookie", desc:"Get fortune", icon:"🥠", file:"fun/fortune-cookie.html" },
+        { id:"horoscope", name:"Daily Horoscope", desc:"Zodiac", icon:"♈", file:"fun/horoscope.html" }
+      ]},
+      { id:"health", name:"Health & Fitness", icon:"fa-heart", color:"#ec4899", tools:[
+        { id:"bmi-health", name:"BMI Calculator", desc:"Body mass", icon:"⚖️", file:"health/bmi-health.html" },
+        { id:"bmr-health", name:"BMR Calculator", desc:"Daily calorie", icon:"🔥", file:"health/bmr-health.html" },
+        { id:"body-fat", name:"Body Fat", desc:"Estimate %", icon:"💪", file:"health/body-fat.html" },
+        { id:"ideal-weight", name:"Ideal Weight", desc:"Height based", icon:"📏", file:"health/ideal-weight.html" },
+        { id:"water-health", name:"Water Intake", desc:"Daily need", icon:"💧", file:"health/water-health.html" },
+        { id:"sleep-health", name:"Sleep Calculator", desc:"Best times", icon:"🌙", file:"health/sleep-health.html" },
+        { id:"heart-rate", name:"Heart Rate Zones", desc:"Exercise zones", icon:"❤️", file:"health/heart-rate.html" },
+        { id:"running-pace", name:"Running Pace", desc:"Speed", icon:"🏃", file:"health/running-pace.html" },
+        { id:"one-rep-max", name:"1RM Calculator", desc:"Max lift", icon:"🏋️", file:"health/one-rep-max.html" },
+        { id:"macro-calc", name:"Macro Calculator", desc:"Protein/Carbs/Fat", icon:"🍗", file:"health/macro-calc.html" },
+        { id:"pregnancy", name:"Pregnancy Due", desc:"Due date", icon:"👶", file:"health/pregnancy.html" }
+      ]},
+      { id:"dev", name:"Dev Tools", icon:"fa-code", color:"#3b82f6", tools:[
+        { id:"json-format", name:"JSON Formatter", desc:"Pretty print", icon:"📦", file:"dev/json-format.html" },
+        { id:"json-minify", name:"JSON Minifier", desc:"Compress", icon:"🗜️", file:"dev/json-minify.html" },
+        { id:"sql-format", name:"SQL Formatter", desc:"Pretty SQL", icon:"🗄️", file:"dev/sql-format.html" },
+        { id:"html-format", name:"HTML Formatter", desc:"Pretty HTML", icon:"🌐", file:"dev/html-format.html" },
+        { id:"css-format", name:"CSS Formatter", desc:"Pretty CSS", icon:"🎨", file:"dev/css-format.html" },
+        { id:"js-format", name:"JS Formatter", desc:"Pretty JS", icon:"💻", file:"dev/js-format.html" },
+        { id:"html-minify", name:"HTML Minifier", desc:"Compress HTML", icon:"🗜️", file:"dev/html-minify.html" },
+        { id:"css-minify", name:"CSS Minifier", desc:"Compress CSS", icon:"🗜️", file:"dev/css-minify.html" },
+        { id:"js-minify", name:"JS Minifier", desc:"Compress JS", icon:"🗜️", file:"dev/js-minify.html" },
+        { id:"base64-encode", name:"Base64 Encode", desc:"Encode", icon:"🔐", file:"dev/base64-encode.html" },
+        { id:"base64-decode", name:"Base64 Decode", desc:"Decode", icon:"🔓", file:"dev/base64-decode.html" },
+        { id:"md5-hash", name:"MD5 Generator", desc:"Hash", icon:"🔑", file:"dev/md5-hash.html" },
+        { id:"sha1-hash", name:"SHA1", desc:"Hash", icon:"🔑", file:"dev/sha1-hash.html" },
+        { id:"sha256-hash", name:"SHA256", desc:"Hash", icon:"🔑", file:"dev/sha256-hash.html" },
+        { id:"jwt-decode", name:"JWT Decoder", desc:"Decode JWT", icon:"🎫", file:"dev/jwt-decode.html" },
+        { id:"uuid-gen", name:"UUID Generator", desc:"UUID", icon:"🆔", file:"dev/uuid-gen.html" },
+        { id:"api-test", name:"API Tester", desc:"Test endpoints", icon:"⚡", file:"dev/api-test.html" },
+        { id:"crontab-gen", name:"Crontab Gen", desc:"Cron schedules", icon:"⏰", file:"dev/crontab-gen.html" }
+      ]},
+      { id:"converters", name:"Converters", icon:"fa-arrows-rotate", color:"#14b8a6", tools:[
+        { id:"unit-conv", name:"Unit Converter", desc:"All units", icon:"📏", file:"converters/unit-conv.html" },
+        { id:"length-conv", name:"Length Converter", desc:"M, KM, Miles", icon:"📐", file:"converters/length-conv.html" },
+        { id:"weight-conv", name:"Weight Converter", desc:"KG, LBS", icon:"⚖️", file:"converters/weight-conv.html" },
+        { id:"temp-conv", name:"Temperature", desc:"C, F, K", icon:"🌡️", file:"converters/temp-conv.html" },
+        { id:"area-conv", name:"Area Converter", desc:"Square units", icon:"📐", file:"converters/area-conv.html" },
+        { id:"volume-conv", name:"Volume Converter", desc:"Liters/Gallons", icon:"🧪", file:"converters/volume-conv.html" },
+        { id:"speed-conv", name:"Speed Converter", desc:"KMH/MPH", icon:"🚀", file:"converters/speed-conv.html" },
+        { id:"pressure-conv", name:"Pressure Converter", desc:"PSI/Bar", icon:"💨", file:"converters/pressure-conv.html" },
+        { id:"data-conv", name:"Data Storage", desc:"KB/MB/GB", icon:"💾", file:"converters/data-conv.html" },
+        { id:"time-conv", name:"Time Converter", desc:"Hours/Min", icon:"⏰", file:"converters/time-conv.html" },
+        { id:"number-sys", name:"Number System", desc:"Bin/Oct/Hex", icon:"🔢", file:"converters/number-sys.html" },
+        { id:"roman-num", name:"Roman Numerals", desc:"Convert", icon:"🏛️", file:"converters/roman-num.html" }
+      ]},
+      { id:"security", name:"Security", icon:"fa-shield", color:"#8b5cf6", tools:[
+        { id:"password-sec", name:"Password Generator", desc:"Secure", icon:"🔑", file:"security/password-sec.html" },
+        { id:"password-strength", name:"Password Strength", desc:"Check strength", icon:"🛡️", file:"security/password-strength.html" },
+        { id:"md5-sec", name:"MD5 Hash", desc:"MD5", icon:"🔒", file:"security/md5-sec.html" },
+        { id:"sha1-sec", name:"SHA1", desc:"SHA1", icon:"🔒", file:"security/sha1-sec.html" },
+        { id:"sha256-sec", name:"SHA256", desc:"SHA256", icon:"🔒", file:"security/sha256-sec.html" },
+        { id:"aes-encrypt", name:"AES Encrypt", desc:"Encrypt", icon:"🔐", file:"security/aes-encrypt.html" },
+        { id:"aes-decrypt", name:"AES Decrypt", desc:"Decrypt", icon:"🔓", file:"security/aes-decrypt.html" },
+        { id:"ssl-sec", name:"SSL Checker", desc:"SSL cert", icon:"🔒", file:"security/ssl-sec.html" }
+      ]}
+    ]
+  };
+
+  // ========== STATE ==========
+  let currentCategory = 'all';
+  let searchQuery = '';
+  let favorites = JSON.parse(localStorage.getItem('toolFavorites') || '[]');
+  let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
+
+  const toolGrid = document.getElementById('toolGrid');
+  const searchInput = document.getElementById('searchInput');
+  const categoryTabs = document.getElementById('categoryTabs');
+  const totalToolsEl = document.getElementById('totalTools');
+  const totalCategoriesEl = document.getElementById('totalCategories');
+  const totalFavoritesEl = document.getElementById('totalFavorites');
+  const lastUsedEl = document.getElementById('lastUsed');
+  const favCountEl = document.getElementById('favCount');
+  const toast = document.getElementById('toast');
+
+  // ========== HELPERS ==========
+  function findToolById(id) {
+    for (const cat of TOOL_DATA.categories) {
+      const found = cat.tools.find(t => t.id === id);
+      if (found) return { ...found, category: cat.name };
+    }
+    return null;
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  // ========== BUILD CATEGORIES ==========
+  function buildCategories() {
+    categoryTabs.innerHTML = `<button class="category-tab active" data-category="all" onclick="filterCategory('all')">🎯 All Tools</button>`;
+    TOOL_DATA.categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'category-tab';
+      btn.dataset.category = cat.id;
+      btn.innerHTML = `<i class="fas ${cat.icon}"></i> ${cat.name} <span class="count">${cat.tools.length}</span>`;
+      btn.onclick = () => filterCategory(cat.id);
+      categoryTabs.appendChild(btn);
+    });
+  }
+
+  // ========== RENDER ==========
+  function renderTools() {
+    let tools = [];
+    if (currentCategory === 'all') {
+      TOOL_DATA.categories.forEach(cat => {
+        tools = tools.concat(cat.tools.map(t => ({ ...t, category: cat.name })));
+      });
+    } else {
+      const cat = TOOL_DATA.categories.find(c => c.id === currentCategory);
+      if (cat) tools = cat.tools.map(t => ({ ...t, category: cat.name }));
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      tools = tools.filter(t => t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q));
+    }
+
+    // stats
+    const totalAll = TOOL_DATA.categories.reduce((acc, c) => acc + c.tools.length, 0);
+    totalToolsEl.textContent = tools.length;
+    totalCategoriesEl.textContent = TOOL_DATA.categories.length;
+    totalFavoritesEl.textContent = favorites.length;
+    favCountEl.textContent = favorites.length;
+
+    if (recentTools.length > 0) {
+      const last = findToolById(recentTools[0]);
+      if (last) lastUsedEl.textContent = `Last: ${last.name}`;
+    } else {
+      lastUsedEl.textContent = 'Ready';
+    }
+
+    if (tools.length === 0) {
+      toolGrid.innerHTML = `<div class="col-span-full text-center py-14 text-gray-500"><div class="text-5xl mb-4">🔍</div><p class="text-lg">No tools found</p><p class="text-sm text-gray-600">try adjusting your search</p></div>`;
+      return;
+    }
+
+    toolGrid.innerHTML = tools.map(tool => {
+      const isFav = favorites.includes(tool.id);
+      return `
+        <div class="tool-card" onclick="useTool('${tool.id}', '${tool.file || '#'}')">
+          <div class="icon">${tool.icon || '🛠️'}</div>
+          <div class="name">${tool.name}</div>
+          <div class="desc">${tool.desc}</div>
+          <span class="badge">${tool.category || ''}</span>
+          <div class="fav-star ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${tool.id}')">
+            ${isFav ? '⭐' : '☆'}
+          </div>
         </div>
-    </header>
+      `;
+    }).join('');
+  }
 
-    <div class="max-w-7xl mx-auto px-4 mt-4 relative z-10">
-        <div class="stats-bar">
-            <div class="stat-item">📊 <strong id="totalTools">0</strong> Tools</div>
-            <div class="stat-item">📂 <strong id="totalCategories">0</strong> Categories</div>
-            <div class="stat-item">⭐ <strong id="totalFavorites">0</strong> Favorites</div>
-            <div class="stat-item">🕐 <span id="lastUsed">Ready to explore</span></div>
-            <div class="stat-item"><span class="live">●</span> Live</div>
-        </div>
-    </div>
+  // ========== ACTIONS ==========
+  function filterCategory(id) {
+    currentCategory = id;
+    document.querySelectorAll('.category-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === id);
+    });
+    renderTools();
+  }
 
-    <div class="max-w-7xl mx-auto px-4 mt-4 relative z-10">
-        <div class="scroll-categories" id="categoryTabs">
-            <button class="category-tab active" data-category="all" onclick="filterCategory('all')">
-                🎯 All Tools
-            </button>
-        </div>
-    </div>
+  function resetFilters() {
+    currentCategory = 'all';
+    searchQuery = '';
+    searchInput.value = '';
+    document.querySelectorAll('.category-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === 'all');
+    });
+    renderTools();
+    showToast('Filters reset 🔄');
+  }
 
-    <main class="max-w-7xl mx-auto px-4 py-6 relative z-10">
-        <div id="toolGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        </div>
-    </main>
+  function useTool(id, filePath) {
+    const tool = findToolById(id);
+    if (!tool) return;
+    recentTools = recentTools.filter(t => t !== id);
+    recentTools.unshift(id);
+    if (recentTools.length > 10) recentTools.pop();
+    localStorage.setItem('recentTools', JSON.stringify(recentTools));
+    if (filePath && filePath !== '#') {
+      window.location.href = filePath;
+    } else {
+      showToast(`🔧 Opening ${tool.name} ...`);
+    }
+  }
 
-    <footer class="text-center py-8 text-gray-500 text-sm border-t border-white/5 relative z-10">
-        🛸 ToolShed Neo 2026 • ⚡ 200+ Tools • 🔮 Zero Backend
-        <br><span class="text-xs">Made with ❤️ • Open Source</span>
-    </footer>
+  function toggleFavorite(id) {
+    const idx = favorites.indexOf(id);
+    if (idx > -1) { favorites.splice(idx, 1); showToast('Removed from favorites 💔'); }
+    else { favorites.push(id); showToast('Added to favorites ⭐'); }
+    localStorage.setItem('toolFavorites', JSON.stringify(favorites));
+    renderTools();
+  }
 
-    <script>
-        // ============================================
-        // 📦 TOOL DATA (FULL)
-        // ============================================
-        const TOOL_DATA = {
-            categories: [
-                {
-                    id: "calculators",
-                    name: "Calculators",
-                    icon: "fa-calculator",
-                    color: "#6366f1",
-                    tools: [
-                        { id: "bmi", name: "BMI Calculator", desc: "Check body mass index", icon: "⚖️", file: "calculators/bmi.html" },
-                        { id: "tip", name: "Tip Calculator", desc: "Calculate restaurant tips", icon: "💵", file: "calculators/tip.html" },
-                        { id: "loan", name: "EMI Calculator", desc: "Home/car loan payments", icon: "🏠", file: "calculators/loan.html" },
-                        { id: "gst", name: "GST Calculator", desc: "Add or remove GST", icon: "🧾", file: "calculators/gst.html" },
-                        { id: "discount", name: "Discount Calculator", desc: "Find sale prices", icon: "🏷️", file: "calculators/discount.html" },
-                        { id: "percentage", name: "Percentage Calculator", desc: "5 different calculations", icon: "💯", file: "calculators/percentage.html" },
-                        { id: "age", name: "Age Calculator", desc: "Exact age in years/months", icon: "🎂", file: "calculators/age.html" },
-                        { id: "date-diff", name: "Date Difference", desc: "Days between two dates", icon: "📅", file: "calculators/date-diff.html" },
-                        { id: "speed", name: "Speed Calculator", desc: "Distance/Time/Speed", icon: "🚀", file: "calculators/speed.html" },
-                        { id: "fuel", name: "Fuel Cost Calculator", desc: "Trip fuel cost", icon: "⛽", file: "calculators/fuel.html" },
-                        { id: "calorie", name: "Calorie Burn", desc: "Exercise calories burned", icon: "🔥", file: "calculators/calorie.html" },
-                        { id: "water", name: "Water Intake", desc: "Daily water need", icon: "💧", file: "calculators/water.html" },
-                        { id: "gpa", name: "GPA Calculator", desc: "Grade point average", icon: "🎓", file: "calculators/gpa.html" },
-                        { id: "profit", name: "Profit Calculator", desc: "Revenue minus cost", icon: "📈", file: "calculators/profit.html" },
-                        { id: "cagr", name: "CAGR Calculator", desc: "Compound annual growth", icon: "📊", file: "calculators/cagr.html" },
-                        { id: "inflation", name: "Inflation Calculator", desc: "Future value of money", icon: "🪙", file: "calculators/inflation.html" },
-                        { id: "mortgage", name: "Mortgage Calculator", desc: "Home loan payments", icon: "🏡", file: "calculators/mortgage.html" },
-                        { id: "retirement", name: "Retirement Calculator", desc: "Savings goal", icon: "🏖️", file: "calculators/retirement.html" },
-                        { id: "bmr", name: "BMR Calculator", desc: "Basal metabolic rate", icon: "❤️", file: "calculators/bmr.html" },
-                        { id: "sip", name: "SIP Calculator", desc: "Systematic investment plan", icon: "📈", file: "calculators/sip.html" }
-                    ]
-                },
-                {
-                    id: "text",
-                    name: "Text Tools",
-                    icon: "fa-pen-fancy",
-                    color: "#10b981",
-                    tools: [
-                        { id: "word-count", name: "Word Counter", desc: "Count words & characters", icon: "📝", file: "text/word-counter.html" },
-                        { id: "case-converter", name: "Case Converter", desc: "UPPER/lower/Title", icon: "🔤", file: "text/case-converter.html" },
-                        { id: "reverse-text", name: "Reverse Text", desc: "Reverse strings", icon: "🔄", file: "text/reverse-text.html" },
-                        { id: "remove-spaces", name: "Remove Spaces", desc: "Remove extra whitespace", icon: "🧹", file: "text/remove-spaces.html" },
-                        { id: "remove-duplicates", name: "Remove Duplicates", desc: "Clean duplicate entries", icon: "📋", file: "text/remove-duplicates.html" },
-                        { id: "text-sorter", name: "Text Sorter", desc: "Sort A-Z or Z-A", icon: "⬆️", file: "text/text-sorter.html" },
-                        { id: "json-validator", name: "JSON Validator", desc: "Check JSON syntax", icon: "✅", file: "text/json-validator.html" },
-                        { id: "xml-to-json", name: "XML to JSON", desc: "Convert XML to JSON", icon: "📄", file: "text/xml-to-json.html" },
-                        { id: "csv-to-json", name: "CSV to JSON", desc: "Convert CSV to JSON", icon: "📊", file: "text/csv-to-json.html" },
-                        { id: "regex-tester", name: "Regex Tester", desc: "Test regular expressions", icon: "🎯", file: "text/regex-tester.html" },
-                        { id: "lorem-ipsum", name: "Lorem Ipsum", desc: "Generate dummy text", icon: "📜", file: "text/lorem-ipsum.html" },
-                        { id: "slug-generator", name: "Slug Generator", desc: "Create URL-friendly text", icon: "🔗", file: "text/slug-generator.html" },
-                        { id: "diff-checker", name: "Diff Checker", desc: "Compare two texts", icon: "🔍", file: "text/diff-checker.html" },
-                        { id: "html-to-text", name: "HTML to Text", desc: "Strip HTML tags", icon: "🏷️", file: "text/html-to-text.html" },
-                        { id: "markdown-preview", name: "Markdown Preview", desc: "Live markdown preview", icon: "📝", file: "text/markdown-preview.html" },
-                        { id: "text-repeater", name: "Text Repeater", desc: "Repeat text N times", icon: "🔁", file: "text/text-repeater.html" },
-                        { id: "acronym-gen", name: "Acronym Generator", desc: "Create acronyms", icon: "🔤", file: "text/acronym-gen.html" },
-                        { id: "hashtag-gen", name: "Hashtag Generator", desc: "Generate hashtags", icon: "#️⃣", file: "text/hashtag-gen.html" }
-                    ]
-                },
-                {
-                    id: "color",
-                    name: "Color Tools",
-                    icon: "fa-palette",
-                    color: "#8b5cf6",
-                    tools: [
-                        { id: "color-picker", name: "Color Picker", desc: "Pick any color", icon: "🎨", file: "color/color-picker.html" },
-                        { id: "hex-to-rgb", name: "HEX to RGB", desc: "Convert hex to rgb", icon: "🔄", file: "color/hex-to-rgb.html" },
-                        { id: "gradient-gen", name: "Gradient Generator", desc: "Create CSS gradients", icon: "🌈", file: "color/gradient-gen.html" },
-                        { id: "contrast-check", name: "Contrast Checker", desc: "Check accessibility", icon: "👁️", file: "color/contrast-check.html" },
-                        { id: "palette-gen", name: "Palette Generator", desc: "Create color palettes", icon: "🎨", file: "color/palette-gen.html" },
-                        { id: "random-color", name: "Random Color", desc: "Generate random colors", icon: "🎲", file: "color/random-color.html" },
-                        { id: "box-shadow", name: "CSS Box Shadow", desc: "Generate box shadows", icon: "📦", file: "color/box-shadow.html" },
-                        { id: "border-radius", name: "CSS Border Radius", desc: "Generate rounded corners", icon: "⬛", file: "color/border-radius.html" },
-                        { id: "text-shadow", name: "CSS Text Shadow", desc: "Generate text shadows", icon: "✍️", file: "color/text-shadow.html" },
-                        { id: "color-name", name: "Color Name Finder", desc: "Find color names", icon: "🏷️", file: "color/color-name.html" },
-                        { id: "shades-gen", name: "Color Shades", desc: "Generate light/dark shades", icon: "🌓", file: "color/shades-gen.html" }
-                    ]
-                },
-                {
-                    id: "url",
-                    name: "URL Tools",
-                    icon: "fa-link",
-                    color: "#06b6d4",
-                    tools: [
-                        { id: "url-encode", name: "URL Encoder", desc: "Encode URL strings", icon: "🔗", file: "url/url-encode.html" },
-                        { id: "url-decode", name: "URL Decoder", desc: "Decode URL strings", icon: "🔓", file: "url/url-decode.html" },
-                        { id: "url-parse", name: "URL Parser", desc: "Parse URL components", icon: "📋", file: "url/url-parse.html" },
-                        { id: "qr-gen", name: "QR Code Generator", desc: "Generate QR codes", icon: "📱", file: "url/qr-gen.html" },
-                        { id: "qr-decode", name: "QR Code Decoder", desc: "Read QR codes", icon: "📲", file: "url/qr-decode.html" },
-                        { id: "domain-age", name: "Domain Age Checker", desc: "Check domain age", icon: "📅", file: "url/domain-age.html" },
-                        { id: "ssl-check", name: "SSL Checker", desc: "Check SSL certificate", icon: "🔒", file: "url/ssl-check.html" },
-                        { id: "ip-lookup", name: "IP Address Lookup", desc: "Find IP details", icon: "🌐", file: "url/ip-lookup.html" },
-                        { id: "site-status", name: "Website Status", desc: "Check if site is up", icon: "✅", file: "url/site-status.html" },
-                        { id: "meta-gen", name: "Meta Tag Generator", desc: "Generate SEO meta tags", icon: "📝", file: "url/meta-gen.html" }
-                    ]
-                },
-                {
-                    id: "date",
-                    name: "Date & Time",
-                    icon: "fa-clock",
-                    color: "#f59e0b",
-                    tools: [
-                        { id: "current-time", name: "Current Time", desc: "Live world clock", icon: "🕐", file: "date/current-time.html" },
-                        { id: "stopwatch", name: "Stopwatch", desc: "Precise timer", icon: "⏱️", file: "date/stopwatch.html" },
-                        { id: "countdown", name: "Countdown Timer", desc: "Countdown to any date", icon: "⏳", file: "date/countdown.html" },
-                        { id: "timezone-conv", name: "Timezone Converter", desc: "Convert time zones", icon: "🌍", file: "date/timezone-conv.html" },
-                        { id: "unix-timestamp", name: "Unix Timestamp", desc: "Convert timestamp", icon: "⌛", file: "date/unix-timestamp.html" },
-                        { id: "calendar-gen", name: "Calendar Generator", desc: "Any month/year calendar", icon: "📆", file: "date/calendar-gen.html" },
-                        { id: "world-clock", name: "World Clock", desc: "Multiple time zones", icon: "🌏", file: "date/world-clock.html" },
-                        { id: "sleep-calc", name: "Sleep Calculator", desc: "Find best bedtime", icon: "🌙", file: "date/sleep-calc.html" },
-                        { id: "birthday-count", name: "Birthday Countdown", desc: "Days until birthday", icon: "🎂", file: "date/birthday-count.html" },
-                        { id: "lunar-cal", name: "Lunar Calendar", desc: "Moon phases", icon: "🌙", file: "date/lunar-cal.html" }
-                    ]
-                },
-                {
-                    id: "fun",
-                    name: "Fun & Games",
-                    icon: "fa-gamepad",
-                    color: "#ef4444",
-                    tools: [
-                        { id: "random-num", name: "Random Number", desc: "Generate random numbers", icon: "🎲", file: "fun/random-num.html" },
-                        { id: "dice-roll", name: "Dice Roller", desc: "Roll 1-6 dice", icon: "🎲", file: "fun/dice-roll.html" },
-                        { id: "coin-flip", name: "Coin Flipper", desc: "Heads or tails", icon: "🪙", file: "fun/coin-flip.html" },
-                        { id: "random-quote", name: "Random Quote", desc: "Inspirational quotes", icon: "💬", file: "fun/random-quote.html" },
-                        { id: "random-joke", name: "Random Joke", desc: "Funny jokes", icon: "😂", file: "fun/random-joke.html" },
-                        { id: "random-fact", name: "Random Fact", desc: "Interesting facts", icon: "💡", file: "fun/random-fact.html" },
-                        { id: "trivia", name: "Trivia Quiz", desc: "Test your knowledge", icon: "🧠", file: "fun/trivia.html" },
-                        { id: "word-scramble", name: "Word Scramble", desc: "Unscramble words", icon: "🔀", file: "fun/word-scramble.html" },
-                        { id: "hangman", name: "Hangman", desc: "Classic word game", icon: "👤", file: "fun/hangman.html" },
-                        { id: "tic-tac-toe", name: "Tic Tac Toe", desc: "2 player game", icon: "❌", file: "fun/tic-tac-toe.html" },
-                        { id: "memory-game", name: "Memory Game", desc: "Card matching", icon: "🃏", file: "fun/memory-game.html" },
-                        { id: "typing-test", name: "Typing Speed Test", desc: "Test WPM", icon: "⌨️", file: "fun/typing-test.html" },
-                        { id: "reaction-test", name: "Reaction Speed", desc: "Click reaction test", icon: "⚡", file: "fun/reaction-test.html" },
-                        { id: "sudoku", name: "Sudoku Solver", desc: "Solve puzzles", icon: "🧩", file: "fun/sudoku.html" },
-                        { id: "emoji-picker", name: "Emoji Picker", desc: "Copy emojis", icon: "😊", file: "fun/emoji-picker.html" },
-                        { id: "fortune-cookie", name: "Fortune Cookie", desc: "Get your fortune", icon: "🥠", file: "fun/fortune-cookie.html" },
-                        { id: "horoscope", name: "Daily Horoscope", desc: "Zodiac predictions", icon: "♈", file: "fun/horoscope.html" }
-                    ]
-                },
-                {
-                    id: "health",
-                    name: "Health & Fitness",
-                    icon: "fa-heart",
-                    color: "#ec4899",
-                    tools: [
-                        { id: "bmi-health", name: "BMI Calculator", desc: "Body mass index", icon: "⚖️", file: "health/bmi-health.html" },
-                        { id: "bmr-health", name: "BMR Calculator", desc: "Daily calorie need", icon: "🔥", file: "health/bmr-health.html" },
-                        { id: "body-fat", name: "Body Fat Calculator", desc: "Estimate body fat %", icon: "💪", file: "health/body-fat.html" },
-                        { id: "ideal-weight", name: "Ideal Weight", desc: "Based on height", icon: "📏", file: "health/ideal-weight.html" },
-                        { id: "water-health", name: "Water Intake", desc: "Daily water need", icon: "💧", file: "health/water-health.html" },
-                        { id: "sleep-health", name: "Sleep Calculator", desc: "Best sleep times", icon: "🌙", file: "health/sleep-health.html" },
-                        { id: "heart-rate", name: "Heart Rate Zones", desc: "Exercise zones", icon: "❤️", file: "health/heart-rate.html" },
-                        { id: "running-pace", name: "Running Pace", desc: "Speed calculator", icon: "🏃", file: "health/running-pace.html" },
-                        { id: "one-rep-max", name: "1RM Calculator", desc: "Max lift", icon: "🏋️", file: "health/one-rep-max.html" },
-                        { id: "macro-calc", name: "Macro Calculator", desc: "Protein/Carbs/Fat", icon: "🍗", file: "health/macro-calc.html" },
-                        { id: "pregnancy", name: "Pregnancy Due Date", desc: "Expected delivery", icon: "👶", file: "health/pregnancy.html" },
-                        
-                },
-                {
-                    id: "dev",
-                    name: "Dev Tools",
-                    icon: "fa-code",
-                    color: "#3b82f6",
-                    tools: [
-                        { id: "json-format", name: "JSON Formatter", desc: "Pretty print JSON", icon: "📦", file: "dev/json-format.html" },
-                        { id: "json-minify", name: "JSON Minifier", desc: "Compress JSON", icon: "🗜️", file: "dev/json-minify.html" },
-                        { id: "sql-format", name: "SQL Formatter", desc: "Pretty SQL", icon: "🗄️", file: "dev/sql-format.html" },
-                        { id: "html-format", name: "HTML Formatter", desc: "Pretty HTML", icon: "🌐", file: "dev/html-format.html" },
-                        { id: "css-format", name: "CSS Formatter", desc: "Pretty CSS", icon: "🎨", file: "dev/css-format.html" },
-                        { id: "js-format", name: "JS Formatter", desc: "Pretty JavaScript", icon: "💻", file: "dev/js-format.html" },
-                        { id: "html-minify", name: "HTML Minifier", desc: "Compress HTML", icon: "🗜️", file: "dev/html-minify.html" },
-                        { id: "css-minify", name: "CSS Minifier", desc: "Compress CSS", icon: "🗜️", file: "dev/css-minify.html" },
-                        { id: "js-minify", name: "JS Minifier", desc: "Compress JS", icon: "🗜️", file: "dev/js-minify.html" },
-                        { id: "base64-encode", name: "Base64 Encode", desc: "Encode to Base64", icon: "🔐", file: "dev/base64-encode.html" },
-                        { id: "base64-decode", name: "Base64 Decode", desc: "Decode from Base64", icon: "🔓", file: "dev/base64-decode.html" },
-                        { id: "md5-hash", name: "MD5 Generator", desc: "Create MD5 hash", icon: "🔑", file: "dev/md5-hash.html" },
-                        { id: "sha1-hash", name: "SHA1 Generator", desc: "Create SHA1 hash", icon: "🔑", file: "dev/sha1-hash.html" },
-                        { id: "sha256-hash", name: "SHA256 Generator", desc: "Create SHA256 hash", icon: "🔑", file: "dev/sha256-hash.html" },
-                        { id: "jwt-decode", name: "JWT Decoder", desc: "Decode JWT tokens", icon: "🎫", file: "dev/jwt-decode.html" },
-                        { id: "uuid-gen", name: "UUID Generator", desc: "Generate UUID", icon: "🆔", file: "dev/uuid-gen.html" },
-                        { id: "api-test", name: "API Tester", desc: "Test API endpoints", icon: "⚡", file: "dev/api-test.html" },
-                        { id: "crontab-gen", name: "Crontab Generator", desc: "Generate cron schedules", icon: "⏰", file: "dev/crontab-gen.html" }
-                    ]
-                },
-                {
-                    id: "converters",
-                    name: "Converters",
-                    icon: "fa-arrows-rotate",
-                    color: "#14b8a6",
-                    tools: [
-                        { id: "unit-conv", name: "Unit Converter", desc: "All units", icon: "📏", file: "converters/unit-conv.html" },
-                        { id: "length-conv", name: "Length Converter", desc: "M, KM, Miles", icon: "📐", file: "converters/length-conv.html" },
-                        { id: "weight-conv", name: "Weight Converter", desc: "KG, LBS", icon: "⚖️", file: "converters/weight-conv.html" },
-                        { id: "temp-conv", name: "Temperature Converter", desc: "C, F, K", icon: "🌡️", file: "converters/temp-conv.html" },
-                        { id: "area-conv", name: "Area Converter", desc: "Square units", icon: "📐", file: "converters/area-conv.html" },
-                        { id: "volume-conv", name: "Volume Converter", desc: "Liters, Gallons", icon: "🧪", file: "converters/volume-conv.html" },
-                        { id: "speed-conv", name: "Speed Converter", desc: "KMH, MPH", icon: "🚀", file: "converters/speed-conv.html" },
-                        { id: "pressure-conv", name: "Pressure Converter", desc: "PSI, Bar", icon: "💨", file: "converters/pressure-conv.html" },
-                        { id: "data-conv", name: "Data Storage", desc: "KB, MB, GB", icon: "💾", file: "converters/data-conv.html" },
-                        { id: "time-conv", name: "Time Converter", desc: "Hours, Minutes", icon: "⏰", file: "converters/time-conv.html" },
-                        { id: "number-sys", name: "Number System", desc: "Bin, Oct, Hex", icon: "🔢", file: "converters/number-sys.html" },
-                        { id: "roman-num", name: "Roman Numerals", desc: "Convert to/from roman", icon: "🏛️", file: "converters/roman-num.html" }
-                    ]
-                },
-                {
-                    id: "security",
-                    name: "Security",
-                    icon: "fa-shield",
-                    color: "#8b5cf6",
-                    tools: [
-                        { id: "password-sec", name: "Password Generator", desc: "Secure passwords", icon: "🔑", file: "security/password-sec.html" },
-                        { id: "password-strength", name: "Password Strength", desc: "Check strength", icon: "🛡️", file: "security/password-strength.html" },
-                        { id: "md5-sec", name: "MD5 Hash", desc: "MD5 encryption", icon: "🔒", file: "security/md5-sec.html" },
-                        { id: "sha1-sec", name: "SHA1 Hash", desc: "SHA1 encryption", icon: "🔒", file: "security/sha1-sec.html" },
-                        { id: "sha256-sec", name: "SHA256 Hash", desc: "SHA256 encryption", icon: "🔒", file: "security/sha256-sec.html" },
-                        { id: "aes-encrypt", name: "AES Encrypt", desc: "Encrypt text", icon: "🔐", file: "security/aes-encrypt.html" },
-                        { id: "aes-decrypt", name: "AES Decrypt", desc: "Decrypt text", icon: "🔓", file: "security/aes-decrypt.html" },
-                        { id: "ssl-sec", name: "SSL Checker", desc: "Check SSL certificate", icon: "🔒", file: "security/ssl-sec.html" }
-                    ]
-                }
-            ]
-        };
+  function showFavorites() {
+    if (favorites.length === 0) { showToast('No favorites yet ⭐'); return; }
+    const names = favorites.map(id => findToolById(id)).filter(Boolean).map(t => t.name).join(', ');
+    showToast(`⭐ ${names}`);
+  }
 
-        // ============================================
-        // 🧠 APP LOGIC
-        // ============================================
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    const btn = document.querySelector('[onclick="toggleDarkMode()"]');
+    btn.textContent = isDark ? '☀️' : '🌙';
+  }
 
-        let currentCategory = 'all';
-        let searchQuery = '';
-        let favorites = JSON.parse(localStorage.getItem('toolFavorites') || '[]');
-        let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
+  // ========== SEARCH EVENTS ==========
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    renderTools();
+  });
 
-        const toolGrid = document.getElementById('toolGrid');
-        const searchInput = document.getElementById('searchInput');
-        const categoryTabs = document.getElementById('categoryTabs');
-        const totalToolsEl = document.getElementById('totalTools');
-        const totalCategoriesEl = document.getElementById('totalCategories');
-        const totalFavoritesEl = document.getElementById('totalFavorites');
-        const lastUsedEl = document.getElementById('lastUsed');
-        const favCountEl = document.getElementById('favCount');
-        const toast = document.getElementById('toast');
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); searchInput.focus(); }
+    if (e.key === 'Escape') { searchInput.value = ''; searchQuery = ''; renderTools(); searchInput.blur(); }
+  });
 
-        // ============================================
-        // 🏗️ BUILD CATEGORIES
-        // ============================================
-        function buildCategories() {
-            categoryTabs.innerHTML = `
-                <button class="category-tab active" data-category="all" onclick="filterCategory('all')">
-                    🎯 All Tools
-                </button>
-            `;
+  // ========== INIT ==========
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.querySelector('[onclick="toggleDarkMode()"]').textContent = '☀️';
+  }
 
-            TOOL_DATA.categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = 'category-tab';
-                btn.dataset.category = cat.id;
-                btn.innerHTML = `
-                    <i class="fas ${cat.icon}"></i> ${cat.name}
-                    <span class="count">${cat.tools.length}</span>
-                `;
-                btn.onclick = () => filterCategory(cat.id);
-                categoryTabs.appendChild(btn);
-            });
-        }
+  buildCategories();
+  renderTools();
+  setTimeout(() => showToast('🛸 ToolShed Neo · 200+ tools'), 400);
 
-        // ============================================
-        // 📊 RENDER TOOLS
-        // ============================================
-        function renderTools() {
-            let tools = [];
-
-            if (currentCategory === 'all') {
-                TOOL_DATA.categories.forEach(cat => {
-                    tools = tools.concat(cat.tools.map(t => ({ ...t, category: cat.name })));
-                });
-            } else {
-                const cat = TOOL_DATA.categories.find(c => c.id === currentCategory);
-                if (cat) {
-                    tools = cat.tools.map(t => ({ ...t, category: cat.name }));
-                }
-            }
-
-            if (searchQuery.trim()) {
-                const query = searchQuery.toLowerCase();
-                tools = tools.filter(t => 
-                    t.name.toLowerCase().includes(query) || 
-                    t.desc.toLowerCase().includes(query)
-                );
-            }
-
-            // Update stats
-            const totalTools = TOOL_DATA.categories.reduce((acc, c) => acc + c.tools.length, 0);
-            totalToolsEl.textContent = tools.length;
-            totalCategoriesEl.textContent = TOOL_DATA.categories.length;
-            totalFavoritesEl.textContent = favorites.length;
-            favCountEl.textContent = favorites.length;
-
-            if (recentTools.length > 0) {
-                const last = findToolById(recentTools[0]);
-                if (last) lastUsedEl.textContent = `Last: ${last.name}`;
-            } else {
-                lastUsedEl.textContent = 'Ready to explore';
-            }
-
-            if (tools.length === 0) {
-                toolGrid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-gray-500">
-                        <div class="text-4xl mb-4">🔍</div>
-                        <p>No tools found</p>
-                        <p class="text-sm text-gray-600">Try adjusting your search</p>
-                    </div>
-                `;
-                return;
-            }
-
-            toolGrid.innerHTML = tools.map(tool => {
-                const isFavorite = favorites.includes(tool.id);
-                return `
-                    <div class="tool-card" onclick="useTool('${tool.id}', '${tool.file || '#'}')">
-                        <div class="icon">${tool.icon || '🛠️'}</div>
-                        <div class="name">${tool.name}</div>
-                        <div class="desc">${tool.desc}</div>
-                        <span class="badge">${tool.category || ''}</span>
-                        <div style="margin-top:8px;font-size:0.7rem;color:${isFavorite ? '#f59e0b' : 'rgba(255,255,255,0.2)'}">
-                            ${isFavorite ? '⭐' : '☆'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ============================================
-        // 🔍 HELPER FUNCTIONS
-        // ============================================
-        function findToolById(id) {
-            for (const cat of TOOL_DATA.categories) {
-                const tool = cat.tools.find(t => t.id === id);
-                if (tool) return { ...tool, category: cat.name };
-            }
-            return null;
-        }
-
-        function filterCategory(id) {
-            currentCategory = id;
-            document.querySelectorAll('.category-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.category === id);
-            });
-            renderTools();
-        }
-
-        function resetFilters() {
-            currentCategory = 'all';
-            searchQuery = '';
-            searchInput.value = '';
-            document.querySelectorAll('.category-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.category === 'all');
-            });
-            renderTools();
-            showToast('Filters reset 🔄');
-        }
-
-        function useTool(id, filePath) {
-            const tool = findToolById(id);
-            if (!tool) return;
-            
-            recentTools = recentTools.filter(t => t !== id);
-            recentTools.unshift(id);
-            if (recentTools.length > 10) recentTools.pop();
-            localStorage.setItem('recentTools', JSON.stringify(recentTools));
-            
-            // Navigate to the tool
-            if (filePath && filePath !== '#') {
-                window.location.href = filePath;
-            } else {
-                showToast(`🔧 Opening ${tool.name}...`);
-            }
-        }
-
-        function toggleFavorite(id) {
-            const index = favorites.indexOf(id);
-            if (index > -1) {
-                favorites.splice(index, 1);
-                showToast('Removed from favorites 💔');
-            } else {
-                favorites.push(id);
-                showToast('Added to favorites ⭐');
-            }
-            localStorage.setItem('toolFavorites', JSON.stringify(favorites));
-            renderTools();
-        }
-
-        function showFavorites() {
-            if (favorites.length === 0) {
-                showToast('No favorites yet! ⭐');
-                return;
-            }
-            const favTools = favorites.map(id => findToolById(id)).filter(Boolean);
-            const names = favTools.map(t => t.name).join(', ');
-            showToast(`⭐ ${names}`);
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const btn = document.querySelector('[onclick="toggleDarkMode()"]');
-            btn.textContent = isDark ? '☀️' : '🌙';
-        }
-
-        function showToast(msg) {
-            toast.textContent = msg;
-            toast.classList.add('show');
-            clearTimeout(toast.timeout);
-            toast.timeout = setTimeout(() => toast.classList.remove('show'), 2500);
-        }
-
-        // ============================================
-        // 🔍 SEARCH
-        // ============================================
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderTools();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-                e.preventDefault();
-                searchInput.focus();
-            }
-            if (e.key === 'Escape') {
-                searchInput.value = '';
-                searchQuery = '';
-                renderTools();
-                searchInput.blur();
-            }
-        });
-
-        // ============================================
-        // 🚀 INIT
-        // ============================================
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('[onclick="toggleDarkMode()"]').textContent = '☀️';
-        }
-
-        buildCategories();
-        renderTools();
-
-        setTimeout(() => showToast('🛸 Welcome to ToolShed Neo!'), 500);
-
-        console.log('🚀 ToolShed Neo Loaded!');
-        const totalTools = TOOL_DATA.categories.reduce((acc, c) => acc + c.tools.length, 0);
-        console.log('📊 Total Tools:', totalTools);
-        console.log('📂 Categories:', TOOL_DATA.categories.length);
-        console.log('💡 Press Ctrl+/ to search');
-    </script>
-
+  console.log('🚀 ToolShed Neo loaded');
+  console.log(`📊 ${TOOL_DATA.categories.reduce((a,c) => a + c.tools.length, 0)} tools, ${TOOL_DATA.categories.length} categories`);
+  console.log('💡 Press Ctrl+/ to search');
+</script>
 </body>
 </html>
