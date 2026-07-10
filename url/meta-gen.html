@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Tag Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 750px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .input-group textarea {
+            min-height: 60px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder, .input-group textarea::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .result-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            position: relative;
+        }
+        .result-box textarea {
+            width: 100%;
+            min-height: 200px;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.8);
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            outline: none;
+        }
+        .result-box .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .result-box .copy-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .preview-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        .preview-box.show {
+            display: block;
+        }
+        .preview-box .preview-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+        .preview-box .preview-desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        .preview-box .preview-url {
+            font-size: 0.8rem;
+            color: rgba(99,102,241,0.6);
+            font-family: 'Courier New', monospace;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🏷️</span>
+        <h1>Meta Tag Generator</h1>
+        <p class="desc">Generate SEO-friendly meta tags for your website</p>
+        
+        <div class="input-group">
+            <label>Page Title</label>
+            <input type="text" id="pageTitle" placeholder="My Awesome Website" value="ToolShed Neo - Free Online Tools">
+        </div>
+        
+        <div class="input-group">
+            <label>Meta Description</label>
+            <textarea id="metaDesc" placeholder="Brief description of your page">200+ free online tools for developers, designers, and everyday users. Calculators, text tools, converters, and more.</textarea>
+        </div>
+        
+        <div class="input-group">
+            <label>Keywords (comma separated)</label>
+            <input type="text" id="metaKeywords" placeholder="keyword1, keyword2, keyword3" value="online tools, free tools, web tools, utilities">
+        </div>
+        
+        <div class="input-group">
+            <label>Author</label>
+            <input type="text" id="metaAuthor" placeholder="Your name or company" value="ToolShed Neo">
+        </div>
+        
+        <div class="input-group">
+            <label>Canonical URL</label>
+            <input type="text" id="canonicalUrl" placeholder="https://example.com/page" value="https://toolshedneo.com">
+        </div>
+        
+        <div class="input-group">
+            <label>Open Graph Image URL (for social sharing)</label>
+            <input type="text" id="ogImage" placeholder="https://example.com/image.jpg" value="https://toolshedneo.com/og-image.jpg">
+        </div>
+        
+        <div class="input-group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label>Robots</label>
+                <select id="robots">
+                    <option value="index, follow">Index, Follow</option>
+                    <option value="index, nofollow">Index, NoFollow</option>
+                    <option value="noindex, follow">NoIndex, Follow</option>
+                    <option value="noindex, nofollow">NoIndex, NoFollow</option>
+                </select>
+            </div>
+            <div>
+                <label>Language</label>
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="zh">Chinese</option>
+                    <option value="ja">Japanese</option>
+                    <option value="hi">Hindi</option>
+                    <option value="ar">Arabic</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="generateMeta()">⚡ Generate Meta Tags</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="preview-box" id="previewBox">
+            <div class="preview-title" id="previewTitle">ToolShed Neo - Free Online Tools</div>
+            <div class="preview-desc" id="previewDesc">200+ free online tools for developers, designers, and everyday users.</div>
+            <div class="preview-url" id="previewUrl">https://toolshedneo.com</div>
+        </div>
+        
+        <div class="result-box">
+            <button class="copy-btn" onclick="copyMeta()">📋 Copy</button>
+            <textarea id="metaOutput" readonly>Click Generate to create meta tags</textarea>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function generateMeta() {
+            const title = document.getElementById('pageTitle').value.trim() || 'Untitled Page';
+            const description = document.getElementById('metaDesc').value.trim() || 'No description provided';
+            const keywords = document.getElementById('metaKeywords').value.trim() || 'website, tools';
+            const author = document.getElementById('metaAuthor').value.trim() || 'Unknown';
+            const canonical = document.getElementById('canonicalUrl').value.trim() || window.location.href;
+            const ogImage = document.getElementById('ogImage').value.trim() || '';
+            const robots = document.getElementById('robots').value;
+            const language = document.getElementById('language').value;
+            
+            // Generate meta tags
+            let metaTags = `<!-- Primary Meta Tags -->\n`;
+            metaTags += `<title>${escapeHTML(title)}</title>\n`;
+            metaTags += `<meta name="title" content="${escapeHTML(title)}">\n`;
+            metaTags += `<meta name="description" content="${escapeHTML(description)}">\n`;
+            metaTags += `<meta name="keywords" content="${escapeHTML(keywords)}">\n`;
+            metaTags += `<meta name="author" content="${escapeHTML(author)}">\n`;
+            metaTags += `<meta name="robots" content="${robots}">\n`;
+            metaTags += `<meta name="language" content="${language}">\n`;
+            metaTags += `<link rel="canonical" href="${escapeHTML(canonical)}">\n\n`;
+            
+            metaTags += `<!-- Open Graph / Social Media Meta Tags -->\n`;
+            metaTags += `<meta property="og:type" content="website">\n`;
+            metaTags += `<meta property="og:url" content="${escapeHTML(canonical)}">\n`;
+            metaTags += `<meta property="og:title" content="${escapeHTML(title)}">\n`;
+            metaTags += `<meta property="og:description" content="${escapeHTML(description)}">\n`;
+            if (ogImage) {
+                metaTags += `<meta property="og:image" content="${escapeHTML(ogImage)}">\n`;
+            }
+            metaTags += `<meta property="og:site_name" content="${escapeHTML(title.split(' - ')[0] || title)}">\n`;
+            metaTags += `<meta property="og:locale" content="${language}">\n\n`;
+            
+            metaTags += `<!-- Twitter Meta Tags -->\n`;
+            metaTags += `<meta name="twitter:card" content="summary_large_image">\n`;
+            metaTags += `<meta name="twitter:title" content="${escapeHTML(title)}">\n`;
+            metaTags += `<meta name="twitter:description" content="${escapeHTML(description)}">\n`;
+            if (ogImage) {
+                metaTags += `<meta name="twitter:image" content="${escapeHTML(ogImage)}">\n`;
+            }
+            
+            document.getElementById('metaOutput').value = metaTags;
+            
+            // Update preview
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDesc').textContent = description.length > 120 ? description.substring(0, 120) + '...' : description;
+            document.getElementById('previewUrl').textContent = canonical;
+            document.getElementById('previewBox').classList.add('show');
+            
+            showToast('✅ Meta tags generated successfully!');
+        }
+
+        function escapeHTML(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function copyMeta() {
+            const output = document.getElementById('metaOutput').value;
+            if (!output || output === 'Click Generate to create meta tags') {
+                showToast('⚠️ Please generate meta tags first');
+                return;
+            }
+            
+            navigator.clipboard.writeText(output).then(() => {
+                showToast('✅ Meta tags copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = output;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Meta tags copied to clipboard!');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('pageTitle').value = '';
+            document.getElementById('metaDesc').value = '';
+            document.getElementById('metaKeywords').value = '';
+            document.getElementById('metaAuthor').value = '';
+            document.getElementById('canonicalUrl').value = '';
+            document.getElementById('ogImage').value = '';
+            document.getElementById('metaOutput').value = 'Click Generate to create meta tags';
+            document.getElementById('previewBox').classList.remove('show');
+            showToast('🗑️ All fields cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Generate on input change with debounce
+        let debounceTimer;
+        document.querySelectorAll('input, textarea, select').forEach(el => {
+            el.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(generateMeta, 800);
+            });
+        });
+
+        // Initial generation
+        window.onload = function() {
+            setTimeout(generateMeta, 100);
+        };
+    </script>
+</body>
+</html>

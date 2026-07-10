@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Spaces</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .input-group textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: monospace;
+            resize: vertical;
+        }
+        .input-group textarea:focus { outline: none; border-color: #6366f1; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .btn-group button {
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+            flex: 1;
+            min-width: 70px;
+        }
+        .btn-group button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-group button.primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border: none;
+        }
+        .btn-group button.primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: none;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result.show { display: block; }
+        .back { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .back:hover { color: #fff; }
+        .copy-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 4px 12px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .stats { display: flex; gap: 16px; margin-top: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🧹</span>
+        <h1>Remove Spaces</h1>
+        <p class="desc">Remove extra spaces from your text</p>
+        
+        <div class="btn-group">
+            <button class="primary" onclick="removeSpaces('all')">🗑️ All Spaces</button>
+            <button onclick="removeSpaces('extra')">📏 Extra Spaces</button>
+            <button onclick="removeSpaces('leading')">⬅️ Leading</button>
+            <button onclick="removeSpaces('trailing')">➡️ Trailing</button>
+            <button onclick="removeSpaces('tabs')">📑 Tabs</button>
+            <button onclick="removeSpaces('newlines')">↩️ Newlines</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Enter your text</label>
+            <textarea id="textInput" placeholder="Type or paste your text here..."></textarea>
+        </div>
+        
+        <div class="result" id="result">
+            <div id="resultContent"></div>
+            <div class="stats">
+                <span>Original: <span id="origLength">0</span> chars</span>
+                <span>Cleaned: <span id="cleanLength">0</span> chars</span>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function removeSpaces(type) {
+            const input = document.getElementById('textInput').value;
+            if (!input) {
+                alert('Please enter some text');
+                return;
+            }
+            
+            let result = '';
+            
+            switch(type) {
+                case 'all':
+                    result = input.replace(/\s/g, '');
+                    break;
+                case 'extra':
+                    result = input.replace(/\s+/g, ' ').trim();
+                    break;
+                case 'leading':
+                    result = input.replace(/^\s+/, '');
+                    break;
+                case 'trailing':
+                    result = input.replace(/\s+$/, '');
+                    break;
+                case 'tabs':
+                    result = input.replace(/\t/g, '');
+                    break;
+                case 'newlines':
+                    result = input.replace(/\n/g, ' ');
+                    break;
+            }
+            
+            document.getElementById('resultContent').textContent = result;
+            document.getElementById('origLength').textContent = input.length;
+            document.getElementById('cleanLength').textContent = result.length;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        function copyResult() {
+            const text = document.getElementById('resultContent').textContent;
+            if (text) {
+                navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
+            }
+        }
+    </script>
+</body>
+</html>

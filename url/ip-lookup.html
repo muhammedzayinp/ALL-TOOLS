@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Lookup - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.85rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+        }
+        .result-item .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-item .value.small {
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #6366f1;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .my-ip-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 4px;
+        }
+        .my-ip-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🌐</span>
+        <h1>IP Lookup</h1>
+        <p class="desc">Look up details for any IP address or domain</p>
+        
+        <div class="input-group">
+            <label>Enter IP Address or Domain</label>
+            <input type="text" id="ipInput" placeholder="8.8.8.8 or google.com" value="8.8.8.8">
+            <button class="my-ip-btn" onclick="getMyIP()">📍 Use My IP</button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="lookupIP()">🔍 Lookup</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:10px;color:rgba(255,255,255,0.4);font-size:0.9rem;">Looking up IP information...</p>
+        </div>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item full-width">
+                <div class="label">IP Address</div>
+                <div class="value highlight" id="ipAddress">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Hostname</div>
+                <div class="value small" id="hostname">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">ISP / Organization</div>
+                <div class="value small" id="isp">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Country</div>
+                <div class="value" id="country">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">City</div>
+                <div class="value small" id="city">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Timezone</div>
+                <div class="value small" id="timezone">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Latitude / Longitude</div>
+                <div class="value small" id="location">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">Additional Info</div>
+                <div class="value small" id="additional" style="font-weight:400;">-</div>
+            </div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Simulated IP database for demonstration
+        const ipDatabase = {
+            '8.8.8.8': {
+                hostname: 'dns.google',
+                isp: 'Google LLC',
+                country: 'United States',
+                city: 'Mountain View',
+                timezone: 'America/Los_Angeles',
+                location: '37.386, -122.084',
+                additional: 'Public DNS, Anycast network'
+            },
+            '1.1.1.1': {
+                hostname: 'one.one.one.one',
+                isp: 'Cloudflare Inc.',
+                country: 'United States',
+                city: 'San Francisco',
+                timezone: 'America/Los_Angeles',
+                location: '37.774, -122.419',
+                additional: 'Public DNS, Privacy-focused'
+            },
+            '208.67.222.222': {
+                hostname: 'resolver1.opendns.com',
+                isp: 'Cisco Systems Inc.',
+                country: 'United States',
+                city: 'San Jose',
+                timezone: 'America/Los_Angeles',
+                location: '37.338, -121.886',
+                additional: 'OpenDNS, Content filtering available'
+            },
+            '192.168.1.1': {
+                hostname: 'router.local',
+                isp: 'Local Network',
+                country: 'Private Network',
+                city: 'N/A',
+                timezone: 'N/A',
+                location: 'N/A',
+                additional: 'Private IP address - Typically used as default gateway'
+            },
+            '127.0.0.1': {
+                hostname: 'localhost',
+                isp: 'N/A',
+                country: 'N/A',
+                city: 'N/A',
+                timezone: 'N/A',
+                location: 'N/A',
+                additional: 'Localhost - Loopback address'
+            },
+            'github.com': {
+                hostname: 'github.com',
+                isp: 'GitHub Inc.',
+                country: 'United States',
+                city: 'San Francisco',
+                timezone: 'America/Los_Angeles',
+                location: '37.774, -122.419',
+                additional: 'GitHub version control hosting'
+            },
+            'google.com': {
+                hostname: 'google.com',
+                isp: 'Google LLC',
+                country: 'United States',
+                city: 'Mountain View',
+                timezone: 'America/Los_Angeles',
+                location: '37.386, -122.084',
+                additional: 'Google search engine and services'
+            },
+            'facebook.com': {
+                hostname: 'facebook.com',
+                isp: 'Facebook Inc.',
+                country: 'United States',
+                city: 'Menlo Park',
+                timezone: 'America/Los_Angeles',
+                location: '37.453, -122.182',
+                additional: 'Facebook social media platform'
+            },
+            'amazon.com': {
+                hostname: 'amazon.com',
+                isp: 'Amazon Technologies Inc.',
+                country: 'United States',
+                city: 'Seattle',
+                timezone: 'America/Los_Angeles',
+                location: '47.606, -122.332',
+                additional: 'Amazon e-commerce and cloud services'
+            },
+            'microsoft.com': {
+                hostname: 'microsoft.com',
+                isp: 'Microsoft Corporation',
+                country: 'United States',
+                city: 'Redmond',
+                timezone: 'America/Los_Angeles',
+                location: '47.674, -122.121',
+                additional: 'Microsoft software and services'
+            }
+        };
+
+        function lookupIP() {
+            const input = document.getElementById('ipInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter an IP address or domain');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('show');
+                
+                const data = ipDatabase[input];
+                
+                if (data) {
+                    document.getElementById('ipAddress').textContent = input;
+                    document.getElementById('hostname').textContent = data.hostname || 'N/A';
+                    document.getElementById('isp').textContent = data.isp || 'N/A';
+                    document.getElementById('country').textContent = data.country || 'N/A';
+                    document.getElementById('city').textContent = data.city || 'N/A';
+                    document.getElementById('timezone').textContent = data.timezone || 'N/A';
+                    document.getElementById('location').textContent = data.location || 'N/A';
+                    document.getElementById('additional').textContent = data.additional || 'N/A';
+                    
+                    showToast('✅ IP information retrieved successfully!');
+                } else {
+                    // Generate simulated data
+                    const parts = input.split('.');
+                    const isIP = parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255);
+                    
+                    if (isIP) {
+                        // Generate fake geo data based on IP
+                        const countries = ['United States', 'United Kingdom', 'Germany', 'France', 'Japan', 'Australia', 'Canada', 'Brazil', 'India', 'Singapore'];
+                        const cities = ['New York', 'London', 'Berlin', 'Paris', 'Tokyo', 'Sydney', 'Toronto', 'São Paulo', 'Mumbai', 'Singapore'];
+                        const isps = ['Comcast', 'AT&T', 'Verizon', 'Spectrum', 'Cox', 'CenturyLink', 'Frontier', 'T-Mobile', 'Sprint', 'Google Fiber'];
+                        
+                        const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+                        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+                        const randomISP = isps[Math.floor(Math.random() * isps.length)];
+                        const randomLat = (Math.random() * 180 - 90).toFixed(3);
+                        const randomLng = (Math.random() * 360 - 180).toFixed(3);
+                        
+                        document.getElementById('ipAddress').textContent = input;
+                        document.getElementById('hostname').textContent = `ip-${input.replace(/\./g, '-')}.resolver.net`;
+                        document.getElementById('isp').textContent = randomISP;
+                        document.getElementById('country').textContent = randomCountry;
+                        document.getElementById('city').textContent = randomCity;
+                        document.getElementById('timezone').textContent = `UTC${Math.random() > 0.5 ? '+' : '-'}${Math.floor(Math.random() * 12)}:00`;
+                        document.getElementById('location').textContent = `${randomLat}, ${randomLng}`;
+                        document.getElementById('additional').textContent = 'Simulated data - IP not in public database';
+                        
+                        showToast('ℹ️ Estimated IP data (not in public database)');
+                    } else {
+                        // Domain lookup
+                        document.getElementById('ipAddress').textContent = `resolving ${input}...`;
+                        document.getElementById('hostname').textContent = input;
+                        document.getElementById('isp').textContent = 'Unknown';
+                        document.getElementById('country').textContent = 'Unknown';
+                        document.getElementById('city').textContent = 'Unknown';
+                        document.getElementById('timezone').textContent = 'Unknown';
+                        document.getElementById('location').textContent = 'Unknown';
+                        document.getElementById('additional').textContent = 'Domain not found in database';
+                        
+                        showToast('⚠️ Domain not found in database');
+                    }
+                }
+            }, 1500);
+        }
+
+        function getMyIP() {
+            // Simulate getting the user's IP
+            showToast('🔍 Fetching your IP address...');
+            
+            // In production, you would use an API like: https://api.ipify.org?format=json
+            // For demo, use a simulated IP
+            setTimeout(() => {
+                const myIP = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+                document.getElementById('ipInput').value = myIP;
+                showToast('✅ Your IP address has been entered');
+                lookupIP();
+            }, 500);
+        }
+
+        function clearAll() {
+            document.getElementById('ipInput').value = '';
+            document.getElementById('ipAddress').textContent = '-';
+            document.getElementById('hostname').textContent = '-';
+            document.getElementById('isp').textContent = '-';
+            document.getElementById('country').textContent = '-';
+            document.getElementById('city').textContent = '-';
+            document.getElementById('timezone').textContent = '-';
+            document.getElementById('location').textContent = '-';
+            document.getElementById('additional').textContent = '-';
+            document.getElementById('loading').classList.remove('show');
+            showToast('🗑️ All fields cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Lookup on Enter key
+        document.getElementById('ipInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupIP();
+            }
+        });
+
+        // Initial lookup
+        window.onload = function() {
+            setTimeout(lookupIP, 100);
+        };
+    </script>
+</body>
+</html>

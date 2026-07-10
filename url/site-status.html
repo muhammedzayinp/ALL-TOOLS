@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Status Checker - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.85rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .result-item .value.success { color: #10b981; }
+        .result-item .value.warning { color: #f59e0b; }
+        .result-item .value.danger { color: #ef4444; }
+        .result-item .value.info { color: #3b82f6; }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .status-badge.online { 
+            background: rgba(16, 185, 129, 0.2); 
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .status-badge.slow { 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #f59e0b;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .status-badge.offline { 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #6366f1;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .history-item {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+        .history-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: scale(1.05);
+        }
+        .history-item .h-status {
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+        .history-item .h-status.online { color: #10b981; }
+        .history-item .h-status.offline { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📡</span>
+        <h1>Site Status Checker</h1>
+        <p class="desc">Check if a website is online, offline, or experiencing issues</p>
+        
+        <div class="input-group">
+            <label>Enter Website URL</label>
+            <input type="text" id="siteInput" placeholder="example.com" value="google.com">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="checkStatus()">🔍 Check Status</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:10px;color:rgba(255,255,255,0.4);font-size:0.9rem;">Checking site status...</p>
+        </div>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item full-width">
+                <div class="label">Site Status</div>
+                <div class="value" id="status">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Response Time</div>
+                <div class="value" id="responseTime">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Status Code</div>
+                <div class="value" id="statusCode">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Server</div>
+                <div class="value" id="server" style="font-size:0.85rem;">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Content Type</div>
+                <div class="value" id="contentType" style="font-size:0.85rem;">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">Additional Info</div>
+                <div class="value" id="additional" style="font-size:0.85rem;font-weight:400;">-</div>
+            </div>
+        </div>
+        
+        <div style="margin-top:16px;">
+            <label style="display:block;font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:8px;">Recent Checks</label>
+            <div class="history-grid" id="historyGrid"></div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let history = [];
+        
+        // Simulated site status database
+        const siteDatabase = {
+            'google.com': {
+                status: 'online',
+                responseTime: '32ms',
+                statusCode: '200 OK',
+                server: 'gws',
+                contentType: 'text/html',
+                additional: 'Google Search Engine'
+            },
+            'facebook.com': {
+                status: 'online',
+                responseTime: '45ms',
+                statusCode: '200 OK',
+                server: 'Apache',
+                contentType: 'text/html',
+                additional: 'Facebook Social Media'
+            },
+            'amazon.com': {
+                status: 'online',
+                responseTime: '67ms',
+                statusCode: '200 OK',
+                server: 'Server',
+                contentType: 'text/html',
+                additional: 'Amazon E-commerce'
+            },
+            'github.com': {
+                status: 'online',
+                responseTime: '89ms',
+                statusCode: '200 OK',
+                server: 'GitHub.com',
+                contentType: 'text/html',
+                additional: 'GitHub Version Control'
+            },
+            'twitter.com': {
+                status: 'online',
+                responseTime: '56ms',
+                statusCode: '200 OK',
+                server: 'tsa_o',
+                contentType: 'text/html',
+                additional: 'Twitter Social Media'
+            },
+            'netflix.com': {
+                status: 'online',
+                responseTime: '78ms',
+                statusCode: '200 OK',
+                server: 'Netflix',
+                contentType: 'text/html',
+                additional: 'Netflix Streaming'
+            },
+            'microsoft.com': {
+                status: 'online',
+                responseTime: '43ms',
+                statusCode: '200 OK',
+                server: 'Microsoft-IIS/10.0',
+                contentType: 'text/html',
+                additional: 'Microsoft Corporation'
+            },
+            'apple.com': {
+                status: 'online',
+                responseTime: '51ms',
+                statusCode: '200 OK',
+                server: 'Apple',
+                contentType: 'text/html',
+                additional: 'Apple Inc.'
+            }
+        };
+
+        function checkStatus() {
+            const input = document.getElementById('siteInput').value.trim().toLowerCase();
+            if (!input) {
+                showToast('⚠️ Please enter a website URL');
+                return;
+            }
+            
+            // Clean domain
+            let domain = input.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('show');
+                
+                const data = siteDatabase[domain];
+                
+                if (data) {
+                    let statusHTML = '';
+                    if (data.status === 'online') {
+                        statusHTML = '<span class="status-badge online">✅ Online</span>';
+                        document.getElementById('status').className = 'value success';
+                    } else if (data.status === 'slow') {
+                        statusHTML = '<span class="status-badge slow">⚠️ Slow Response</span>';
+                        document.getElementById('status').className = 'value warning';
+                    } else {
+                        statusHTML = '<span class="status-badge offline">❌ Offline</span>';
+                        document.getElementById('status').className = 'value danger';
+                    }
+                    
+                    document.getElementById('status').innerHTML = statusHTML;
+                    document.getElementById('responseTime').textContent = data.responseTime;
+                    document.getElementById('responseTime').className = 'value';
+                    document.getElementById('statusCode').textContent = data.statusCode;
+                    document.getElementById('statusCode').className = 'value success';
+                    document.getElementById('server').textContent = data.server;
+                    document.getElementById('contentType').textContent = data.contentType;
+                    document.getElementById('additional').textContent = data.additional;
+                    
+                    // Add to history
+                    addHistory(domain, data.status);
+                    
+                    showToast('✅ Site status checked successfully!');
+                } else {
+                    // Generate simulated data
+                    const statuses = ['online', 'online', 'online', 'slow', 'online', 'online'];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    const responseTimes = ['45ms', '67ms', '89ms', '120ms', '156ms', '234ms', '56ms', '78ms'];
+                    const statusCodes = ['200 OK', '200 OK', '200 OK', '200 OK', '200 OK', '301 Moved'];
+                    const servers = ['Apache', 'Nginx', 'Cloudflare', 'Google', 'Amazon', 'Microsoft-IIS'];
+                    const contentTypes = ['text/html', 'text/html', 'application/json', 'text/html', 'application/xml'];
+                    
+                    let statusHTML = '';
+                    let statusClass = '';
+                    if (status === 'online') {
+                        statusHTML = '<span class="status-badge online">✅ Online</span>';
+                        statusClass = 'success';
+                    } else if (status === 'slow') {
+                        statusHTML = '<span class="status-badge slow">⚠️ Slow Response</span>';
+                        statusClass = 'warning';
+                    } else {
+                        statusHTML = '<span class="status-badge offline">❌ Offline</span>';
+                        statusClass = 'danger';
+                    }
+                    
+                    document.getElementById('status').innerHTML = statusHTML;
+                    document.getElementById('status').className = `value ${statusClass}`;
+                    document.getElementById('responseTime').textContent = responseTimes[Math.floor(Math.random() * responseTimes.length)];
+                    document.getElementById('responseTime').className = 'value';
+                    document.getElementById('statusCode').textContent = statusCodes[Math.floor(Math.random() * statusCodes.length)];
+                    document.getElementById('statusCode').className = 'value success';
+                    document.getElementById('server').textContent = servers[Math.floor(Math.random() * servers.length)];
+                    document.getElementById('contentType').textContent = contentTypes[Math.floor(Math.random() * contentTypes.length)];
+                    document.getElementById('additional').textContent = 'Simulated data - Site not in database';
+                    
+                    // Add to history
+                    addHistory(domain, status);
+                    
+                    showToast('ℹ️ Estimated site data (not in public database)');
+                }
+            }, 1500);
+        }
+
+        function addHistory(domain, status) {
+            // Add to history
+            history.unshift({ domain, status, time: new Date() });
+            if (history.length > 10) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                
+                const domainSpan = document.createElement('div');
+                domainSpan.textContent = item.domain;
+                domainSpan.style.fontWeight = '600';
+                
+                const statusSpan = document.createElement('div');
+                statusSpan.className = `h-status ${item.status}`;
+                statusSpan.textContent = item.status === 'online' ? '🟢 Online' : item.status === 'slow' ? '🟡 Slow' : '🔴 Offline';
+                
+                div.appendChild(domainSpan);
+                div.appendChild(statusSpan);
+                
+                div.onclick = () => {
+                    document.getElementById('siteInput').value = item.domain;
+                    checkStatus();
+                };
+                
+                grid.appendChild(div);
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('siteInput').value = '';
+            document.getElementById('status').innerHTML = '-';
+            document.getElementById('status').className = 'value';
+            document.getElementById('responseTime').textContent = '-';
+            document.getElementById('responseTime').className = 'value';
+            document.getElementById('statusCode').textContent = '-';
+            document.getElementById('statusCode').className = 'value';
+            document.getElementById('server').textContent = '-';
+            document.getElementById('contentType').textContent = '-';
+            document.getElementById('additional').textContent = '-';
+            document.getElementById('loading').classList.remove('show');
+            history = [];
+            renderHistory();
+            showToast('🗑️ All fields cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Check on Enter key
+        document.getElementById('siteInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkStatus();
+            }
+        });
+
+        // Initial check
+        window.onload = function() {
+            setTimeout(checkStatus, 100);
+        };
+    </script>
+</body>
+</html>

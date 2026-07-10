@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acronym Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .input-group textarea { min-height: 80px; resize: vertical; font-family: monospace; }
+        .input-group input:focus, .input-group textarea:focus { outline: none; border-color: #6366f1; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.3); }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-group button {
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+            flex: 1;
+        }
+        .btn-group button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: none;
+            text-align: center;
+        }
+        .result.show { display: block; }
+        .result .big { font-size: 3rem; font-weight: 800; color: #a78bfa; letter-spacing: 4px; }
+        .result .sub { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 8px; }
+        .back { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .back:hover { color: #fff; }
+        .copy-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 4px 12px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔤</span>
+        <h1>Acronym Generator</h1>
+        <p class="desc">Create acronyms from phrases or text</p>
+        
+        <div class="input-group">
+            <label>Enter phrase or text</label>
+            <textarea id="textInput" placeholder="e.g. World Health Organization"></textarea>
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="generateAcronym('letters')">🔤 First Letters</button>
+            <button onclick="generateAcronym('words')">📝 All Words</button>
+            <button onclick="generateAcronym('custom')">🎯 Custom</button>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="big" id="resultBig">--</div>
+            <div class="sub" id="resultSub">Acronym</div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function generateAcronym(type) {
+            const text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                alert('Please enter some text');
+                return;
+            }
+            
+            let words = text.trim().split(/\s+/);
+            let result = '';
+            let fullForm = '';
+            
+            switch(type) {
+                case 'letters':
+                    result = words.map(w => w.charAt(0).toUpperCase()).join('');
+                    fullForm = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                    break;
+                case 'words':
+                    result = words.map(w => w.toUpperCase()).join(' ');
+                    fullForm = words.join(' ');
+                    break;
+                case 'custom':
+                    // User can customize - take first 2 letters of each word
+                    result = words.map(w => w.substring(0, 2).toUpperCase()).join('');
+                    fullForm = words.join(' ');
+                    break;
+            }
+            
+            document.getElementById('resultBig').textContent = result;
+            document.getElementById('resultSub').textContent = `From: ${fullForm}`;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        function copyResult() {
+            const text = document.getElementById('resultBig').textContent;
+            if (text && text !== '--') {
+                navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
+            }
+        }
+    </script>
+</body>
+</html>

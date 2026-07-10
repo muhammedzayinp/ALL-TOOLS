@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Encode - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.85rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group textarea::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-small:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+        .stats .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+        .stats .stat-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stats .stat-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            margin-top: 2px;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔗</span>
+        <h1>URL Encode</h1>
+        <p class="desc">Encode text to URL-safe format (percent-encoding)</p>
+        
+        <div class="input-group">
+            <label>Input Text</label>
+            <textarea id="inputText" placeholder="Enter text to encode...">Hello World! How are you? (test@example.com)</textarea>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="encode()">🔒 Encode</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Encoded Result</label>
+            <textarea id="outputText" placeholder="Encoded result will appear here..." readonly></textarea>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="copyResult()">📋 Copy Result</button>
+            <button class="btn-secondary" onclick="decode()">🔓 Decode</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="label">Original Length</div>
+                <div class="value" id="originalLength">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Encoded Length</div>
+                <div class="value" id="encodedLength">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Difference</div>
+                <div class="value" id="difference">0</div>
+            </div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function encode() {
+            const input = document.getElementById('inputText').value;
+            if (!input) {
+                showToast('⚠️ Please enter some text to encode');
+                return;
+            }
+            
+            try {
+                const encoded = encodeURIComponent(input);
+                document.getElementById('outputText').value = encoded;
+                updateStats(input, encoded);
+                showToast('✅ Text encoded successfully!');
+            } catch (e) {
+                showToast('❌ Error encoding text: ' + e.message);
+            }
+        }
+
+        function decode() {
+            const input = document.getElementById('outputText').value;
+            if (!input) {
+                showToast('⚠️ Please encode something first or paste encoded text');
+                return;
+            }
+            
+            try {
+                const decoded = decodeURIComponent(input);
+                document.getElementById('inputText').value = decoded;
+                updateStats(decoded, input);
+                showToast('✅ Text decoded successfully!');
+            } catch (e) {
+                showToast('❌ Error decoding text: ' + e.message);
+            }
+        }
+
+        function updateStats(original, encoded) {
+            const origLen = original.length;
+            const encLen = encoded.length;
+            document.getElementById('originalLength').textContent = origLen;
+            document.getElementById('encodedLength').textContent = encLen;
+            document.getElementById('difference').textContent = encLen - origLen;
+        }
+
+        function copyResult() {
+            const output = document.getElementById('outputText').value;
+            if (!output) {
+                showToast('⚠️ No encoded text to copy');
+                return;
+            }
+            
+            navigator.clipboard.writeText(output).then(() => {
+                showToast('✅ Encoded text copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = output;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Encoded text copied to clipboard!');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            document.getElementById('originalLength').textContent = '0';
+            document.getElementById('encodedLength').textContent = '0';
+            document.getElementById('difference').textContent = '0';
+            showToast('🗑️ All fields cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Auto-encode on input with debounce
+        let debounceTimer;
+        document.getElementById('inputText').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (this.value) {
+                    encode();
+                }
+            }, 500);
+        });
+
+        // Initial encode
+        window.onload = function() {
+            encode();
+        };
+    </script>
+</body>
+</html>

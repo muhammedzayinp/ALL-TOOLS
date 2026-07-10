@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML to JSON</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .input-group textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: monospace;
+            resize: vertical;
+        }
+        .input-group textarea:focus { outline: none; border-color: #6366f1; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .btn-group button {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: 80px;
+        }
+        .btn-group button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-group button.primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border: none;
+        }
+        .btn-group button.primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: none;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #a78bfa;
+        }
+        .result.show { display: block; }
+        .back { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .back:hover { color: #fff; }
+        .copy-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 4px 12px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none; }
+        .error-msg.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📄</span>
+        <h1>XML to JSON</h1>
+        <p class="desc">Convert XML to JSON format instantly</p>
+        
+        <div class="btn-group">
+            <button class="primary" onclick="convertXML()">🔄 Convert</button>
+            <button onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Enter XML</label>
+            <textarea id="xmlInput" placeholder='<root><name>John</name><age>30</age></root>'></textarea>
+        </div>
+        
+        <div class="error-msg" id="errorMsg">⚠️ Invalid XML</div>
+        
+        <div class="result" id="result">
+            <div id="resultContent"></div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function convertXML() {
+            const xml = document.getElementById('xmlInput').value;
+            const error = document.getElementById('errorMsg');
+            
+            if (!xml.trim()) {
+                alert('Please enter some XML');
+                return;
+            }
+            
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xml, 'text/xml');
+                
+                // Check for parsing errors
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    error.textContent = '⚠️ ' + parseError.textContent;
+                    error.classList.add('show');
+                    document.getElementById('result').classList.remove('show');
+                    return;
+                }
+                
+                error.classList.remove('show');
+                
+                // Convert XML to JSON
+                const json = xmlToJson(xmlDoc.documentElement);
+                const prettyJson = JSON.stringify(json, null, 2);
+                
+                document.getElementById('resultContent').textContent = prettyJson;
+                document.getElementById('result').classList.add('show');
+                
+            } catch (e) {
+                error.textContent = '⚠️ ' + e.message;
+                error.classList.add('show');
+                document.getElementById('result').classList.remove('show');
+            }
+        }
+        
+        function xmlToJson(node) {
+            const obj = {};
+            
+            // Get attributes
+            if (node.attributes && node.attributes.length > 0) {
+                obj['@attributes'] = {};
+                for (let i = 0; i < node.attributes.length; i++) {
+                    const attr = node.attributes[i];
+                    obj['@attributes'][attr.name] = attr.value;
+                }
+            }
+            
+            // Get children
+            if (node.children && node.children.length > 0) {
+                for (let child of node.children) {
+                    const childName = child.nodeName;
+                    const childData = xmlToJson(child);
+                    
+                    if (obj[childName]) {
+                        if (!Array.isArray(obj[childName])) {
+                            obj[childName] = [obj[childName]];
+                        }
+                        obj[childName].push(childData);
+                    } else {
+                        obj[childName] = childData;
+                    }
+                }
+            } else {
+                // Text node
+                const text = node.textContent.trim();
+                if (text) {
+                    return text;
+                }
+                return null;
+            }
+            
+            // If only one child and no attributes, simplify
+            const keys = Object.keys(obj);
+            if (keys.length === 1 && !obj['@attributes']) {
+                const onlyKey = keys[0];
+                const onlyValue = obj[onlyKey];
+                if (!Array.isArray(onlyValue) && typeof onlyValue === 'string') {
+                    return onlyValue;
+                }
+            }
+            
+            return obj;
+        }
+        
+        function clearAll() {
+            document.getElementById('xmlInput').value = '';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('errorMsg').classList.remove('show');
+        }
+        
+        function copyResult() {
+            const text = document.getElementById('resultContent').textContent;
+            if (text) {
+                navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
+            }
+        }
+    </script>
+</body>
+</html>
