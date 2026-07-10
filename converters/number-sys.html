@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number System Converter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            word-break: break-all;
+        }
+        .result-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        .result-detail {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 8px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .swap-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swap-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(180deg);
+        }
+        .all-results {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .all-results .item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .all-results .item .label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+        }
+        .all-results .item .value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #34d399;
+            word-break: break-all;
+        }
+        @media (max-width: 480px) {
+            .row-2col { grid-template-columns: 1fr; }
+            .all-results { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔢</span>
+        <h1>Number System Converter</h1>
+        <p class="desc">Convert between binary, octal, decimal, and hexadecimal</p>
+        
+        <div class="row-2col">
+            <div class="input-group">
+                <label>From</label>
+                <select id="fromUnit" onchange="convert()">
+                    <option value="binary">Binary (Base 2)</option>
+                    <option value="octal">Octal (Base 8)</option>
+                    <option value="decimal" selected>Decimal (Base 10)</option>
+                    <option value="hexadecimal">Hexadecimal (Base 16)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>To</label>
+                <select id="toUnit" onchange="convert()">
+                    <option value="binary">Binary (Base 2)</option>
+                    <option value="octal">Octal (Base 8)</option>
+                    <option value="decimal">Decimal (Base 10)</option>
+                    <option value="hexadecimal" selected>Hexadecimal (Base 16)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin: 8px 0;">
+            <button class="swap-btn" onclick="swapUnits()">⇄</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Value</label>
+            <input type="text" id="inputValue" value="255" oninput="convert()">
+        </div>
+        
+        <div class="result-container">
+            <div class="result-value" id="resultValue">FF</div>
+            <div class="result-label" id="resultLabel">hexadecimal</div>
+            <div class="result-detail" id="resultDetail">255 decimal = FF hexadecimal</div>
+        </div>
+        
+        <div class="all-results" id="allResults">
+            <div class="item">
+                <div class="label">Binary</div>
+                <div class="value" id="binResult">11111111</div>
+            </div>
+            <div class="item">
+                <div class="label">Octal</div>
+                <div class="value" id="octResult">377</div>
+            </div>
+            <div class="item">
+                <div class="label">Decimal</div>
+                <div class="value" id="decResult">255</div>
+            </div>
+            <div class="item">
+                <div class="label">Hexadecimal</div>
+                <div class="value" id="hexResult">FF</div>
+            </div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function convert() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const value = document.getElementById('inputValue').value.trim();
+            
+            if (!value) {
+                document.getElementById('resultValue').textContent = '—';
+                document.getElementById('resultLabel').textContent = getLabel(toUnit);
+                document.getElementById('resultDetail').textContent = 'Please enter a value';
+                updateAllResults('');
+                return;
+            }
+            
+            try {
+                // Convert from source to decimal
+                let decimal;
+                if (fromUnit === 'binary') {
+                    if (!/^[01]+$/.test(value)) throw new Error('Invalid binary');
+                    decimal = parseInt(value, 2);
+                } else if (fromUnit === 'octal') {
+                    if (!/^[0-7]+$/.test(value)) throw new Error('Invalid octal');
+                    decimal = parseInt(value, 8);
+                } else if (fromUnit === 'decimal') {
+                    if (!/^-?\d+$/.test(value)) throw new Error('Invalid decimal');
+                    decimal = parseInt(value, 10);
+                } else if (fromUnit === 'hexadecimal') {
+                    if (!/^[0-9A-Fa-f]+$/.test(value)) throw new Error('Invalid hexadecimal');
+                    decimal = parseInt(value, 16);
+                }
+                
+                if (isNaN(decimal)) throw new Error('Invalid number');
+                
+                // Convert decimal to target
+                let result;
+                if (toUnit === 'binary') result = decimal.toString(2);
+                else if (toUnit === 'octal') result = decimal.toString(8);
+                else if (toUnit === 'decimal') result = decimal.toString(10);
+                else if (toUnit === 'hexadecimal') result = decimal.toString(16).toUpperCase();
+                
+                // Display result
+                document.getElementById('resultValue').textContent = result;
+                document.getElementById('resultLabel').textContent = getLabel(toUnit);
+                document.getElementById('resultDetail').textContent = 
+                    `${value} ${getLabel(fromUnit)} = ${result} ${getLabel(toUnit)}`;
+                
+                // Update all results
+                updateAllResults(decimal);
+                
+            } catch (e) {
+                document.getElementById('resultValue').textContent = '❌';
+                document.getElementById('resultLabel').textContent = 'Invalid';
+                document.getElementById('resultDetail').textContent = e.message;
+                updateAllResults('');
+            }
+        }
+
+        function updateAllResults(decimal) {
+            if (decimal === '' || isNaN(decimal)) {
+                document.getElementById('binResult').textContent = '—';
+                document.getElementById('octResult').textContent = '—';
+                document.getElementById('decResult').textContent = '—';
+                document.getElementById('hexResult').textContent = '—';
+                return;
+            }
+            document.getElementById('binResult').textContent = decimal.toString(2);
+            document.getElementById('octResult').textContent = decimal.toString(8);
+            document.getElementById('decResult').textContent = decimal.toString(10);
+            document.getElementById('hexResult').textContent = decimal.toString(16).toUpperCase();
+        }
+
+        function getLabel(unit) {
+            const labels = {
+                binary: 'binary',
+                octal: 'octal',
+                decimal: 'decimal',
+                hexadecimal: 'hexadecimal'
+            };
+            return labels[unit] || unit;
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('fromUnit');
+            const toSelect = document.getElementById('toUnit');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            convert();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            convert();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Color Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .color-display {
+            width: 100%;
+            height: 200px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.08);
+            transition: all 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #6366f1;
+            position: relative;
+            overflow: hidden;
+        }
+        .color-display .hex-code {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 8px 24px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .color-display .rgb-code {
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        .color-display .color-name {
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+            margin-top: 4px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .info-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .info-item .value.red { color: #ef4444; }
+        .info-item .value.green { color: #10b981; }
+        .info-item .value.blue { color: #3b82f6; }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 6px;
+            margin: 12px 0 16px 0;
+        }
+        .history-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .history-item:hover {
+            transform: scale(1.15);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎲</span>
+        <h1>Random Color Generator</h1>
+        <p class="desc">Generate random colors with different formats and schemes</p>
+        
+        <div class="color-display" id="colorDisplay">
+            <span class="hex-code" id="hexCode">#6366F1</span>
+            <span class="rgb-code" id="rgbCode">RGB(99, 102, 241)</span>
+            <span class="color-name" id="colorName">Royal Blue</span>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Color Format</label>
+                <select id="format" onchange="generateRandomColor()">
+                    <option value="hex">Hex</option>
+                    <option value="rgb">RGB</option>
+                    <option value="hsl">HSL</option>
+                    <option value="cmyk">CMYK</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Scheme Type</label>
+                <select id="scheme" onchange="generateRandomColor()">
+                    <option value="any">Any Color</option>
+                    <option value="pastel">Pastel</option>
+                    <option value="vibrant">Vibrant</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                    <option value="warm">Warm</option>
+                    <option value="cool">Cool</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Red</div>
+                <div class="value red" id="redValue">99</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Green</div>
+                <div class="value green" id="greenValue">102</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Blue</div>
+                <div class="value blue" id="blueValue">241</div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="generateRandomColor()">🎲 Generate Random Color</button>
+        
+        <div style="margin-top:16px;">
+            <label style="display:block;font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:8px;">History</label>
+            <div class="history-grid" id="historyGrid"></div>
+        </div>
+        
+        <button class="btn-secondary" onclick="copyColor()">📋 Copy Color</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const colorNames = {
+            '#FF6B6B': 'Coral Red',
+            '#4ECDC4': 'Teal',
+            '#45B7D1': 'Sky Blue',
+            '#96CEB4': 'Mint',
+            '#FFEAA7': 'Cream',
+            '#DDA0DD': 'Plum',
+            '#FF9FF3': 'Pink',
+            '#F368E0': 'Magenta',
+            '#FF9F43': 'Orange',
+            '#FECA57': 'Gold',
+            '#48DBFB': 'Cyan',
+            '#0ABDE3': 'Cerulean',
+            '#10AC84': 'Emerald',
+            '#EE5A24': 'Vermilion',
+            '#5F27CD': 'Purple',
+            '#341F97': 'Navy',
+            '#FF6B6B': 'Sunset',
+            '#8395A7': 'Gray',
+            '#222F3E': 'Charcoal',
+            '#54A0FF': 'Cornflower',
+            '#5F27CD': 'Violet',
+            '#1DD1A1': 'Mint Green',
+            '#F368E0': 'Hot Pink',
+            '#FF9F43': 'Tangerine',
+            '#0ABDE3': 'Turquoise',
+            '#FECA57': 'Saffron',
+            '#48DBFB': 'Electric Blue',
+            '#FF6B6B': 'Salmon',
+            '#10AC84': 'Forest Green',
+            '#EE5A24': 'Burnt Orange'
+        };
+
+        let history = [];
+
+        function generateRandomColor() {
+            const format = document.getElementById('format').value;
+            const scheme = document.getElementById('scheme').value;
+            
+            let r, g, b;
+            
+            switch(scheme) {
+                case 'pastel':
+                    r = Math.floor(Math.random() * 127 + 128);
+                    g = Math.floor(Math.random() * 127 + 128);
+                    b = Math.floor(Math.random() * 127 + 128);
+                    break;
+                case 'vibrant':
+                    const vibrantColors = [
+                        [255, 107, 107], [78, 205, 196], [69, 183, 209],
+                        [255, 159, 67], [254, 202, 87], [243, 104, 224],
+                        [90, 39, 205], [16, 172, 132], [238, 90, 36]
+                    ];
+                    const vibrant = vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
+                    r = vibrant[0];
+                    g = vibrant[1];
+                    b = vibrant[2];
+                    break;
+                case 'dark':
+                    r = Math.floor(Math.random() * 80);
+                    g = Math.floor(Math.random() * 80);
+                    b = Math.floor(Math.random() * 80);
+                    break;
+                case 'light':
+                    r = Math.floor(Math.random() * 100 + 155);
+                    g = Math.floor(Math.random() * 100 + 155);
+                    b = Math.floor(Math.random() * 100 + 155);
+                    break;
+                case 'warm':
+                    r = Math.floor(Math.random() * 155 + 100);
+                    g = Math.floor(Math.random() * 100);
+                    b = Math.floor(Math.random() * 100);
+                    break;
+                case 'cool':
+                    r = Math.floor(Math.random() * 100);
+                    g = Math.floor(Math.random() * 155 + 100);
+                    b = Math.floor(Math.random() * 155 + 100);
+                    break;
+                default:
+                    r = Math.floor(Math.random() * 256);
+                    g = Math.floor(Math.random() * 256);
+                    b = Math.floor(Math.random() * 256);
+            }
+            
+            const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+            
+            // Update display
+            const display = document.getElementById('colorDisplay');
+            display.style.background = hex;
+            
+            // Update text color based on luminance
+            const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            const textColor = lum > 0.5 ? '#000000' : '#ffffff';
+            display.style.color = textColor;
+            
+            // Update hex code
+            document.getElementById('hexCode').textContent = format === 'hex' ? hex.toUpperCase() : hex.toUpperCase();
+            
+            // Update RGB
+            document.getElementById('rgbCode').textContent = `RGB(${r}, ${g}, ${b})`;
+            document.getElementById('redValue').textContent = r;
+            document.getElementById('greenValue').textContent = g;
+            document.getElementById('blueValue').textContent = b;
+            
+            // Update color name
+            const name = colorNames[hex] || 'Custom Color';
+            document.getElementById('colorName').textContent = name;
+            
+            // Add to history
+            addToHistory(hex);
+        }
+
+        function addToHistory(hex) {
+            history.unshift(hex);
+            if (history.length > 20) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            history.forEach(hex => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.style.background = hex;
+                div.onclick = () => {
+                    document.getElementById('colorDisplay').style.background = hex;
+                    document.getElementById('hexCode').textContent = hex.toUpperCase();
+                    const rgb = hexToRgb(hex);
+                    if (rgb) {
+                        document.getElementById('rgbCode').textContent = `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+                        document.getElementById('redValue').textContent = rgb.r;
+                        document.getElementById('greenValue').textContent = rgb.g;
+                        document.getElementById('blueValue').textContent = rgb.b;
+                        const name = colorNames[hex] || 'Custom Color';
+                        document.getElementById('colorName').textContent = name;
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function copyColor() {
+            const hex = document.getElementById('hexCode').textContent;
+            const rgb = document.getElementById('rgbCode').textContent;
+            const format = document.getElementById('format').value;
+            
+            let copyText;
+            if (format === 'hex') {
+                copyText = hex;
+            } else if (format === 'rgb') {
+                copyText = rgb;
+            } else {
+                copyText = hex;
+            }
+            
+            navigator.clipboard.writeText(copyText).then(() => {
+                showToast('✅ Color copied: ' + copyText);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = copyText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Color copied: ' + copyText);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Generate initial random color
+        generateRandomColor();
+    </script>
+</body>
+</html>

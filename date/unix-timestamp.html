@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unix Timestamp Converter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+            word-break: break-all;
+        }
+        .result-item .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-item .value.small {
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .current-timestamp {
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            margin: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .current-timestamp .label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+        .current-timestamp .value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+        .current-timestamp .refresh-btn {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.7rem;
+        }
+        .current-timestamp .refresh-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">⌛</span>
+        <h1>Unix Timestamp Converter</h1>
+        <p class="desc">Convert between Unix timestamps and human-readable dates</p>
+        
+        <div class="current-timestamp">
+            <span class="label">Current Unix Timestamp:</span>
+            <span class="value" id="currentTimestamp">-</span>
+            <button class="refresh-btn" onclick="updateCurrentTimestamp()">↻ Refresh</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Unix Timestamp (seconds)</label>
+            <input type="text" id="timestampInput" placeholder="e.g. 1700000000">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="convertTimestamp()">🔄 Convert</button>
+            <button class="btn-secondary" onclick="setCurrentTimestamp()">📥 Use Current</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" id="dateInput">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="convertDate()">🔄 Convert</button>
+            <button class="btn-secondary" onclick="setCurrentDate()">📥 Use Current</button>
+        </div>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item full-width">
+                <div class="label">Unix Timestamp</div>
+                <div class="value highlight" id="resultTimestamp">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">Human-Readable Date</div>
+                <div class="value" id="resultDate">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">UTC</div>
+                <div class="value small" id="resultUTC">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Local Time</div>
+                <div class="value small" id="resultLocal">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">ISO 8601</div>
+                <div class="value small" id="resultISO">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">RFC 2822</div>
+                <div class="value small" id="resultRFC">-</div>
+            </div>
+        </div>
+        
+        <button class="btn-secondary" onclick="copyResult()" style="width:100%;margin-top:8px;">📋 Copy Result</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let lastResult = '';
+
+        function updateCurrentTimestamp() {
+            const timestamp = Math.floor(Date.now() / 1000);
+            document.getElementById('currentTimestamp').textContent = timestamp;
+        }
+
+        function setCurrentTimestamp() {
+            const timestamp = document.getElementById('currentTimestamp').textContent;
+            document.getElementById('timestampInput').value = timestamp;
+            convertTimestamp();
+        }
+
+        function setCurrentDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('dateInput').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            convertDate();
+        }
+
+        function convertTimestamp() {
+            const input = document.getElementById('timestampInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter a Unix timestamp');
+                return;
+            }
+            
+            const timestamp = parseInt(input);
+            if (isNaN(timestamp) || timestamp < 0) {
+                showToast('⚠️ Please enter a valid positive number');
+                return;
+            }
+            
+            const date = new Date(timestamp * 1000);
+            if (isNaN(date.getTime())) {
+                showToast('⚠️ Invalid timestamp');
+                return;
+            }
+            
+            updateResults(timestamp, date);
+            showToast('✅ Converted timestamp to date');
+        }
+
+        function convertDate() {
+            const input = document.getElementById('dateInput').value;
+            if (!input) {
+                showToast('⚠️ Please select a date and time');
+                return;
+            }
+            
+            const date = new Date(input);
+            if (isNaN(date.getTime())) {
+                showToast('⚠️ Invalid date');
+                return;
+            }
+            
+            const timestamp = Math.floor(date.getTime() / 1000);
+            document.getElementById('timestampInput').value = timestamp;
+            updateResults(timestamp, date);
+            showToast('✅ Converted date to timestamp');
+        }
+
+        function updateResults(timestamp, date) {
+            // Unix Timestamp
+            document.getElementById('resultTimestamp').textContent = timestamp;
+            lastResult = timestamp;
+            
+            // Human-readable date
+            document.getElementById('resultDate').textContent = date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            
+            // UTC
+            document.getElementById('resultUTC').textContent = date.toUTCString();
+            
+            // Local Time
+            document.getElementById('resultLocal').textContent = date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZoneName: 'short'
+            });
+            
+            // ISO 8601
+            document.getElementById('resultISO').textContent = date.toISOString();
+            
+            // RFC 2822
+            document.getElementById('resultRFC').textContent = date.toRFC2822 ? date.toRFC2822() : date.toString();
+        }
+
+        function copyResult() {
+            const result = document.getElementById('resultTimestamp').textContent;
+            if (result === '-') {
+                showToast('⚠️ Please convert a timestamp first');
+                return;
+            }
+            
+            const date = document.getElementById('resultDate').textContent;
+            const text = `Unix: ${result}\nDate: ${date}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Result copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Result copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Auto-convert on input with debounce
+        let timestampTimer;
+        document.getElementById('timestampInput').addEventListener('input', function() {
+            clearTimeout(timestampTimer);
+            timestampTimer = setTimeout(convertTimestamp, 500);
+        });
+
+        let dateTimer;
+        document.getElementById('dateInput').addEventListener('input', function() {
+            clearTimeout(dateTimer);
+            dateTimer = setTimeout(convertDate, 500);
+        });
+
+        // Initialize
+        updateCurrentTimestamp();
+        setCurrentDate();
+        
+        // Update current timestamp every second
+        setInterval(updateCurrentTimestamp, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shades Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 750px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .color-display {
+            width: 100%;
+            height: 100px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: #6366f1;
+            transition: all 0.5s ease;
+        }
+        .color-display .base-hex {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 4px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .color-display .base-label {
+            font-size: 0.8rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.2);
+            padding: 2px 12px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group label span {
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+        }
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 4px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .shades-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .shade-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            min-height: 80px;
+            position: relative;
+        }
+        .shade-item:hover {
+            transform: scale(1.08);
+            z-index: 2;
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .shade-item .shade-hex {
+            font-size: 0.55rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+        }
+        .shade-item .shade-label {
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎨</span>
+        <h1>Shades Generator</h1>
+        <p class="desc">Generate shades, tints, and tones from any color</p>
+        
+        <div class="color-display" id="colorDisplay">
+            <span class="base-hex" id="baseHex">#6366F1</span>
+            <span class="base-label" id="baseLabel">Base Color</span>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Base Color</label>
+                <input type="color" id="baseColor" value="#6366f1" onchange="generateShades()">
+            </div>
+            <div class="control-group">
+                <label>Variation Type</label>
+                <select id="variationType" onchange="generateShades()">
+                    <option value="shades">Shades (Darken)</option>
+                    <option value="tints">Tints (Lighten)</option>
+                    <option value="tones">Tones (Desaturate)</option>
+                    <option value="all" selected>All Combined</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="shades-grid" id="shadesGrid"></div>
+        
+        <button class="btn" onclick="randomColor()">🎲 Random Color</button>
+        <button class="btn-secondary" onclick="copyAllShades()">📋 Copy All Hex Codes</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            }
+            const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function rgbToHex(r, g, b) {
+            const clamp = (v) => Math.min(255, Math.max(0, Math.round(v)));
+            return '#' + [clamp(r), clamp(g), clamp(b)].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return { h: h * 360, s: s * 100, l: l * 100 };
+        }
+
+        function hslToRgb(h, s, l) {
+            h /= 360;
+            s /= 100;
+            l /= 100;
+            
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return { r: r * 255, g: g * 255, b: b * 255 };
+        }
+
+        function generateShades() {
+            const baseHex = document.getElementById('baseColor').value;
+            const type = document.getElementById('variationType').value;
+            const rgb = hexToRgb(baseHex);
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            
+            // Update display
+            document.getElementById('colorDisplay').style.background = baseHex;
+            document.getElementById('baseHex').textContent = baseHex.toUpperCase();
+            
+            const textColor = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255 > 0.5 ? '#000000' : '#ffffff';
+            document.getElementById('colorDisplay').style.color = textColor;
+            
+            const grid = document.getElementById('shadesGrid');
+            grid.innerHTML = '';
+            
+            let colors = [];
+            const steps = 6;
+            
+            if (type === 'shades' || type === 'all') {
+                // Generate shades (darken)
+                for (let i = 0; i < steps; i++) {
+                    const l = Math.max(0, hsl.l - (i / (steps - 1)) * hsl.l * 0.7);
+                    const rgb2 = hslToRgb(hsl.h, hsl.s, l);
+                    colors.push({
+                        hex: rgbToHex(rgb2.r, rgb2.g, rgb2.b),
+                        label: i === 0 ? 'Base' : `Shade ${i}`
+                    });
+                }
+            }
+            
+            if (type === 'tints' || type === 'all') {
+                // Generate tints (lighten)
+                for (let i = 0; i < steps; i++) {
+                    const l = Math.min(100, hsl.l + (i / (steps - 1)) * (100 - hsl.l) * 0.7);
+                    const rgb2 = hslToRgb(hsl.h, hsl.s, l);
+                    colors.push({
+                        hex: rgbToHex(rgb2.r, rgb2.g, rgb2.b),
+                        label: i === 0 ? 'Base' : `Tint ${i}`
+                    });
+                }
+            }
+            
+            if (type === 'tones' || type === 'all') {
+                // Generate tones (desaturate)
+                for (let i = 0; i < steps; i++) {
+                    const s = Math.max(0, hsl.s - (i / (steps - 1)) * hsl.s * 0.8);
+                    const rgb2 = hslToRgb(hsl.h, s, hsl.l);
+                    colors.push({
+                        hex: rgbToHex(rgb2.r, rgb2.g, rgb2.b),
+                        label: i === 0 ? 'Base' : `Tone ${i}`
+                    });
+                }
+            }
+            
+            // Remove duplicates and limit to 12
+            const unique = [];
+            const seen = new Set();
+            colors.forEach(c => {
+                if (!seen.has(c.hex)) {
+                    seen.add(c.hex);
+                    unique.push(c);
+                }
+            });
+            
+            // Sort by lightness
+            unique.sort((a, b) => {
+                const rgbA = hexToRgb(a.hex);
+                const rgbB = hexToRgb(b.hex);
+                const lumA = (0.299 * rgbA.r + 0.587 * rgbA.g + 0.114 * rgbA.b);
+                const lumB = (0.299 * rgbB.r + 0.587 * rgbB.g + 0.114 * rgbB.b);
+                return lumA - lumB;
+            });
+            
+            // Limit to 12
+            const finalColors = unique.slice(0, 12);
+            
+            finalColors.forEach(color => {
+                const item = document.createElement('div');
+                item.className = 'shade-item';
+                item.style.background = color.hex;
+                
+                const rgb = hexToRgb(color.hex);
+                const textColor = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255 > 0.5 ? '#000000' : '#ffffff';
+                item.style.color = textColor;
+                
+                const hexText = document.createElement('span');
+                hexText.className = 'shade-hex';
+                hexText.textContent = color.hex.toUpperCase();
+                hexText.style.color = textColor;
+                
+                const label = document.createElement('span');
+                label.className = 'shade-label';
+                label.textContent = color.label;
+                label.style.color = textColor;
+                
+                item.appendChild(hexText);
+                item.appendChild(label);
+                
+                item.onclick = () => {
+                    copyToClipboard(color.hex);
+                };
+                item.title = 'Click to copy hex code';
+                
+                grid.appendChild(item);
+            });
+        }
+
+        function randomColor() {
+            const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('baseColor').value = randomHex;
+            const types = ['shades', 'tints', 'tones', 'all'];
+            document.getElementById('variationType').value = types[Math.floor(Math.random() * types.length)];
+            generateShades();
+        }
+
+        function copyAllShades() {
+            const items = document.querySelectorAll('.shade-item .shade-hex');
+            const hexCodes = Array.from(items).map(el => el.textContent).join(' ');
+            copyToClipboard(hexCodes, '✅ All hex codes copied!');
+        }
+
+        function copyToClipboard(text, message = '✅ Color copied!') {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(message);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast(message);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Initialize
+        generateShades();
+    </script>
+</body>
+</html>

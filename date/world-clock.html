@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 750px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .clock-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .clock-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .clock-item:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+        }
+        .clock-item .city-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+        .clock-item .city-time {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 4px 0;
+        }
+        .clock-item .city-date {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            font-family: 'Courier New', monospace;
+        }
+        .clock-item .city-offset {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.2);
+            margin-top: 2px;
+        }
+        .clock-item .city-seconds {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.25);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🕐</span>
+        <h1>World Clock</h1>
+        <p class="desc">View current time in multiple cities around the world</p>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Timezone Format</label>
+                <select id="formatSelect" onchange="updateClocks()">
+                    <option value="12">12-Hour</option>
+                    <option value="24" selected>24-Hour</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Show Seconds</label>
+                <select id="secondsSelect" onchange="updateClocks()">
+                    <option value="yes" selected>Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="clock-grid" id="clockGrid"></div>
+        
+        <button class="btn-secondary" onclick="copyAllTimes()">📋 Copy All Times</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const cities = [
+            { name: 'London', timezone: 'Europe/London', flag: '🇬🇧' },
+            { name: 'New York', timezone: 'America/New_York', flag: '🇺🇸' },
+            { name: 'Los Angeles', timezone: 'America/Los_Angeles', flag: '🇺🇸' },
+            { name: 'Tokyo', timezone: 'Asia/Tokyo', flag: '🇯🇵' },
+            { name: 'Sydney', timezone: 'Australia/Sydney', flag: '🇦🇺' },
+            { name: 'Dubai', timezone: 'Asia/Dubai', flag: '🇦🇪' },
+            { name: 'Singapore', timezone: 'Asia/Singapore', flag: '🇸🇬' },
+            { name: 'Mumbai', timezone: 'Asia/Kolkata', flag: '🇮🇳' },
+            { name: 'Paris', timezone: 'Europe/Paris', flag: '🇫🇷' },
+            { name: 'Moscow', timezone: 'Europe/Moscow', flag: '🇷🇺' },
+            { name: 'Hong Kong', timezone: 'Asia/Hong_Kong', flag: '🇭🇰' },
+            { name: 'Auckland', timezone: 'Pacific/Auckland', flag: '🇳🇿' }
+        ];
+
+        let clockInterval;
+
+        function updateClocks() {
+            const format = document.getElementById('formatSelect').value;
+            const showSeconds = document.getElementById('secondsSelect').value === 'yes';
+            
+            const grid = document.getElementById('clockGrid');
+            grid.innerHTML = '';
+            
+            const now = new Date();
+            
+            cities.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'clock-item';
+                
+                const cityTime = getTimeInTimezone(city.timezone);
+                const timeStr = formatTime(cityTime, format, showSeconds);
+                const dateStr = cityTime.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                const offset = getTimezoneOffset(city.timezone);
+                
+                item.innerHTML = `
+                    <div class="city-name">${city.flag} ${city.name}</div>
+                    <div class="city-time">${timeStr}</div>
+                    <div class="city-date">${dateStr}</div>
+                    <div class="city-offset">${offset}</div>
+                    ${showSeconds ? `<div class="city-seconds">${String(cityTime.getSeconds()).padStart(2, '0')}s</div>` : ''}
+                `;
+                
+                grid.appendChild(item);
+            });
+        }
+
+        function getTimeInTimezone(timezone) {
+            const now = new Date();
+            const options = {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            
+            const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+            let year, month, day, hour, minute, second;
+            
+            parts.forEach(part => {
+                if (part.type === 'year') year = parseInt(part.value);
+                if (part.type === 'month') month = parseInt(part.value);
+                if (part.type === 'day') day = parseInt(part.value);
+                if (part.type === 'hour') hour = parseInt(part.value);
+                if (part.type === 'minute') minute = parseInt(part.value);
+                if (part.type === 'second') second = parseInt(part.value);
+            });
+            
+            return new Date(year, month - 1, day, hour, minute, second);
+        }
+
+        function formatTime(date, format, showSeconds) {
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            let ampm = '';
+            
+            if (format === '12') {
+                ampm = hours >= 12 ? ' PM' : ' AM';
+                hours = hours % 12 || 12;
+            }
+            
+            const hourStr = String(hours).padStart(2, '0');
+            const timeStr = showSeconds ? `${hourStr}:${minutes}:${seconds}` : `${hourStr}:${minutes}`;
+            return format === '12' ? timeStr + ampm : timeStr;
+        }
+
+        function getTimezoneOffset(timezone) {
+            const now = new Date();
+            const options = { timeZone: timezone, timeZoneName: 'short' };
+            const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+            
+            let offset = '';
+            parts.forEach(part => {
+                if (part.type === 'timeZoneName') {
+                    offset = part.value;
+                }
+            });
+            return offset || 'UTC';
+        }
+
+        function copyAllTimes() {
+            const times = [];
+            document.querySelectorAll('.clock-item').forEach(item => {
+                const name = item.querySelector('.city-name').textContent;
+                const time = item.querySelector('.city-time').textContent;
+                const date = item.querySelector('.city-date').textContent;
+                times.push(`${name}: ${time} (${date})`);
+            });
+            
+            const text = times.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ All times copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ All times copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Start the clock
+        function startClock() {
+            updateClocks();
+            clearInterval(clockInterval);
+            clockInterval = setInterval(updateClocks, 1000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            startClock();
+        };
+    </script>
+</body>
+</html>

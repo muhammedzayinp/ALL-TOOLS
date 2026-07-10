@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roman Numeral Converter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            word-break: break-all;
+        }
+        .result-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        .result-detail {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 8px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .swap-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swap-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(180deg);
+        }
+        .roman-info {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            flex-wrap: wrap;
+        }
+        .roman-info span {
+            background: rgba(255,255,255,0.03);
+            padding: 2px 10px;
+            border-radius: 4px;
+        }
+        @media (max-width: 480px) {
+            .row-2col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🏛️</span>
+        <h1>Roman Numeral Converter</h1>
+        <p class="desc">Convert between Roman numerals and Arabic numbers (1-3999)</p>
+        
+        <div class="row-2col">
+            <div class="input-group">
+                <label>From</label>
+                <select id="fromUnit" onchange="convert()">
+                    <option value="arabic" selected>Arabic Number</option>
+                    <option value="roman">Roman Numeral</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>To</label>
+                <select id="toUnit" onchange="convert()">
+                    <option value="arabic">Arabic Number</option>
+                    <option value="roman" selected>Roman Numeral</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin: 8px 0;">
+            <button class="swap-btn" onclick="swapUnits()">⇄</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Value</label>
+            <input type="text" id="inputValue" value="2024" oninput="convert()">
+        </div>
+        
+        <div class="result-container">
+            <div class="result-value" id="resultValue">MMXXIV</div>
+            <div class="result-label" id="resultLabel">Roman Numeral</div>
+            <div class="result-detail" id="resultDetail">2024 = MMXXIV</div>
+        </div>
+        
+        <div class="roman-info">
+            <span>I = 1</span>
+            <span>V = 5</span>
+            <span>X = 10</span>
+            <span>L = 50</span>
+            <span>C = 100</span>
+            <span>D = 500</span>
+            <span>M = 1000</span>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function toRoman(num) {
+            if (num < 1 || num > 3999) return null;
+            
+            const romanNumerals = [
+                { value: 1000, symbol: 'M' },
+                { value: 900, symbol: 'CM' },
+                { value: 500, symbol: 'D' },
+                { value: 400, symbol: 'CD' },
+                { value: 100, symbol: 'C' },
+                { value: 90, symbol: 'XC' },
+                { value: 50, symbol: 'L' },
+                { value: 40, symbol: 'XL' },
+                { value: 10, symbol: 'X' },
+                { value: 9, symbol: 'IX' },
+                { value: 5, symbol: 'V' },
+                { value: 4, symbol: 'IV' },
+                { value: 1, symbol: 'I' }
+            ];
+            
+            let result = '';
+            for (let i = 0; i < romanNumerals.length; i++) {
+                while (num >= romanNumerals[i].value) {
+                    result += romanNumerals[i].symbol;
+                    num -= romanNumerals[i].value;
+                }
+            }
+            return result;
+        }
+
+        function fromRoman(roman) {
+            const romanMap = {
+                'M': 1000, 'CM': 900, 'D': 500, 'CD': 400,
+                'C': 100, 'XC': 90, 'L': 50, 'XL': 40,
+                'X': 10, 'IX': 9, 'V': 5, 'IV': 4, 'I': 1
+            };
+            
+            let result = 0;
+            let i = 0;
+            roman = roman.toUpperCase();
+            
+            while (i < roman.length) {
+                // Check for two-character symbols
+                if (i + 1 < roman.length && romanMap[roman.substring(i, i + 2)]) {
+                    result += romanMap[roman.substring(i, i + 2)];
+                    i += 2;
+                } else if (romanMap[roman[i]]) {
+                    result += romanMap[roman[i]];
+                    i++;
+                } else {
+                    return null;
+                }
+            }
+            
+            // Validate: convert back and compare
+            if (toRoman(result) !== roman.toUpperCase()) {
+                return null;
+            }
+            
+            return result;
+        }
+
+        function convert() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const value = document.getElementById('inputValue').value.trim();
+            
+            if (!value) {
+                document.getElementById('resultValue').textContent = '—';
+                document.getElementById('resultLabel').textContent = getLabel(toUnit);
+                document.getElementById('resultDetail').textContent = 'Please enter a value';
+                return;
+            }
+            
+            try {
+                let result;
+                let detail;
+                let displayValue = value;
+                
+                if (fromUnit === 'arabic') {
+                    const num = parseInt(value, 10);
+                    if (isNaN(num) || num < 1 || num > 3999) {
+                        throw new Error('Enter a number between 1 and 3999');
+                    }
+                    result = toRoman(num);
+                    if (!result) throw new Error('Invalid number');
+                    detail = `${num} = ${result}`;
+                } else {
+                    // Roman to Arabic
+                    const num = fromRoman(value);
+                    if (num === null) {
+                        throw new Error('Invalid Roman numeral');
+                    }
+                    result = num.toString();
+                    detail = `${value} = ${num}`;
+                }
+                
+                document.getElementById('resultValue').textContent = result;
+                document.getElementById('resultLabel').textContent = getLabel(toUnit);
+                document.getElementById('resultDetail').textContent = detail;
+                
+            } catch (e) {
+                document.getElementById('resultValue').textContent = '❌';
+                document.getElementById('resultLabel').textContent = 'Invalid';
+                document.getElementById('resultDetail').textContent = e.message;
+            }
+        }
+
+        function getLabel(unit) {
+            const labels = {
+                arabic: 'Arabic Number',
+                roman: 'Roman Numeral'
+            };
+            return labels[unit] || unit;
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('fromUnit');
+            const toSelect = document.getElementById('toUnit');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            convert();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            convert();
+        };
+    </script>
+</body>
+</html>

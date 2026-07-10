@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input[type="time"] {
+            color-scheme: dark;
+        }
+        .input-group input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+        }
+        .result-item .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.3rem;
+        }
+        .result-item .value.success { color: #10b981; }
+        .result-item .value.warning { color: #f59e0b; }
+        .result-item .value.danger { color: #ef4444; }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .sleep-tips {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .sleep-tips .tip-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+        }
+        .sleep-tips .tip-item {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+        .sleep-tips .tip-item::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: rgba(99,102,241,0.5);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">😴</span>
+        <h1>Sleep Calculator</h1>
+        <p class="desc">Calculate optimal bedtime and wake-up time based on sleep cycles</p>
+        
+        <div class="input-group">
+            <label>Wake-up Time</label>
+            <input type="time" id="wakeTime" value="07:00">
+        </div>
+        
+        <div class="input-group">
+            <label>Sleep Cycle Duration (minutes)</label>
+            <select id="cycleDuration">
+                <option value="90" selected>90 minutes (Average)</option>
+                <option value="80">80 minutes</option>
+                <option value="85">85 minutes</option>
+                <option value="95">95 minutes</option>
+                <option value="100">100 minutes</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Number of Sleep Cycles</label>
+            <select id="cycleCount">
+                <option value="4">4 cycles (6 hours)</option>
+                <option value="5" selected>5 cycles (7.5 hours)</option>
+                <option value="6">6 cycles (9 hours)</option>
+                <option value="7">7 cycles (10.5 hours)</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="calculateSleep()">🌙 Calculate Sleep Times</button>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item full-width">
+                <div class="label">Recommended Bedtime</div>
+                <div class="value highlight" id="bedtime">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Wake-up Time</div>
+                <div class="value" id="wakeDisplay">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Total Sleep Time</div>
+                <div class="value" id="totalSleep">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Sleep Cycles</div>
+                <div class="value" id="cyclesDisplay">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Sleep Quality</div>
+                <div class="value" id="qualityDisplay">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">Alternative Bedtimes</div>
+                <div class="value" id="alternatives" style="font-size:0.85rem;font-weight:400;">-</div>
+            </div>
+        </div>
+        
+        <div class="sleep-tips" id="sleepTips">
+            <div class="tip-title">💡 Sleep Tips</div>
+            <div class="tip-item">Try to maintain a consistent sleep schedule</div>
+            <div class="tip-item">Avoid screens 30 minutes before bedtime</div>
+            <div class="tip-item">Keep your bedroom cool (65-68°F / 18-20°C)</div>
+            <div class="tip-item">Avoid caffeine after 2 PM</div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calculateSleep() {
+            const wakeTime = document.getElementById('wakeTime').value;
+            const cycleDuration = parseInt(document.getElementById('cycleDuration').value);
+            const cycleCount = parseInt(document.getElementById('cycleCount').value);
+            
+            if (!wakeTime) {
+                showToast('⚠️ Please select a wake-up time');
+                return;
+            }
+            
+            // Parse wake time
+            const [wakeHour, wakeMinute] = wakeTime.split(':').map(Number);
+            
+            // Calculate total sleep time
+            const totalSleepMinutes = cycleDuration * cycleCount;
+            const totalHours = Math.floor(totalSleepMinutes / 60);
+            const totalMinutes = totalSleepMinutes % 60;
+            
+            // Calculate bedtime
+            let bedMinutes = wakeHour * 60 + wakeMinute - totalSleepMinutes;
+            let bedHour = Math.floor(bedMinutes / 60);
+            let bedMinute = bedMinutes % 60;
+            
+            // Handle negative time (previous day)
+            let bedAM = true;
+            if (bedMinutes < 0) {
+                bedMinutes += 24 * 60;
+                bedHour = Math.floor(bedMinutes / 60);
+                bedMinute = bedMinutes % 60;
+                bedAM = false;
+            }
+            
+            // Format bedtime
+            const bedTimeStr = `${String(bedHour).padStart(2, '0')}:${String(bedMinute).padStart(2, '0')}`;
+            
+            // Calculate alternatives (different cycle counts)
+            const alternatives = [];
+            for (let i = Math.max(3, cycleCount - 2); i <= Math.min(8, cycleCount + 2); i++) {
+                if (i === cycleCount) continue;
+                const altMinutes = cycleDuration * i;
+                let altBed = wakeHour * 60 + wakeMinute - altMinutes;
+                if (altBed < 0) altBed += 24 * 60;
+                const altHour = Math.floor(altBed / 60);
+                const altMin = altBed % 60;
+                const altStr = `${String(altHour).padStart(2, '0')}:${String(altMin).padStart(2, '0')}`;
+                const altHours = Math.floor(altMinutes / 60);
+                const altMins = altMinutes % 60;
+                alternatives.push(`${altStr} (${altHours}h ${altMins}m)`);
+            }
+            
+            // Determine sleep quality
+            let quality = '';
+            let qualityClass = '';
+            if (cycleCount >= 5 && cycleCount <= 6) {
+                quality = '🌟 Optimal';
+                qualityClass = 'success';
+            } else if (cycleCount === 4) {
+                quality = '⚠️ Minimum Recommended';
+                qualityClass = 'warning';
+            } else if (cycleCount >= 7) {
+                quality = '😴 Extra Rest (May be too much)';
+                qualityClass = 'warning';
+            } else {
+                quality = '⚠️ Not Enough Sleep';
+                qualityClass = 'danger';
+            }
+            
+            // Update results
+            document.getElementById('bedtime').textContent = bedTimeStr;
+            document.getElementById('wakeDisplay').textContent = wakeTime;
+            document.getElementById('totalSleep').textContent = `${totalHours}h ${totalMinutes}m`;
+            document.getElementById('cyclesDisplay').textContent = `${cycleCount} cycles (${cycleDuration}min each)`;
+            document.getElementById('qualityDisplay').textContent = quality;
+            document.getElementById('qualityDisplay').className = `value ${qualityClass}`;
+            document.getElementById('alternatives').textContent = alternatives.join('  |  ');
+            
+            // Update sleep tips based on quality
+            updateSleepTips(cycleCount);
+            
+            showToast('✅ Sleep times calculated successfully!');
+        }
+
+        function updateSleepTips(cycles) {
+            const tips = document.getElementById('sleepTips');
+            let tipItems = [];
+            
+            if (cycles < 5) {
+                tipItems = [
+                    'Try to aim for at least 5 sleep cycles (7.5 hours)',
+                    'Consider going to bed 90 minutes earlier',
+                    'Avoid screens 1 hour before bedtime',
+                    'Try relaxation techniques like deep breathing'
+                ];
+            } else if (cycles >= 6) {
+                tipItems = [
+                    'Great! You\'re getting plenty of sleep',
+                    'Try to maintain this consistent schedule',
+                    'Avoid oversleeping on weekends',
+                    'Keep your bedroom dark and quiet'
+                ];
+            } else {
+                tipItems = [
+                    'You\'re on the right track with 5 cycles',
+                    'Try to maintain a consistent sleep schedule',
+                    'Avoid screens 30 minutes before bedtime',
+                    'Keep your bedroom cool (65-68°F / 18-20°C)',
+                    'Avoid caffeine after 2 PM'
+                ];
+            }
+            
+            let html = '<div class="tip-title">💡 Sleep Tips</div>';
+            tipItems.forEach(tip => {
+                html += `<div class="tip-item">${tip}</div>`;
+            });
+            tips.innerHTML = html;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Auto-calculate on change
+        document.getElementById('wakeTime').addEventListener('change', calculateSleep);
+        document.getElementById('cycleDuration').addEventListener('change', calculateSleep);
+        document.getElementById('cycleCount').addEventListener('change', calculateSleep);
+
+        // Initialize
+        window.onload = function() {
+            setTimeout(calculateSleep, 100);
+        };
+    </script>
+</body>
+</html>

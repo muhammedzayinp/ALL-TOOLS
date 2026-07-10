@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Test - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+        .stat-box .label {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-box .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+        }
+        .stat-box .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .text-display {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.6);
+        }
+        .text-display .char {
+            transition: all 0.1s;
+        }
+        .text-display .char.correct {
+            color: #10b981;
+        }
+        .text-display .char.wrong {
+            color: #ef4444;
+            background: rgba(239,68,68,0.1);
+            text-decoration: underline;
+        }
+        .text-display .char.current {
+            background: rgba(99,102,241,0.2);
+            border-left: 2px solid #6366f1;
+            animation: blink 0.8s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { border-left-color: #6366f1; }
+            50% { border-left-color: transparent; }
+        }
+        .text-display .char.completed {
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .input-area {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .input-area:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+        .input-area:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">⌨️</span>
+        <h1>Typing Speed Test</h1>
+        <p class="desc">Test your typing speed and accuracy</p>
+        
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="label">WPM</div>
+                <div class="value highlight" id="wpm">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Accuracy</div>
+                <div class="value" id="accuracy">100%</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Time</div>
+                <div class="value" id="time">0s</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Characters</div>
+                <div class="value" id="chars">0/0</div>
+            </div>
+        </div>
+        
+        <div class="text-display" id="textDisplay"></div>
+        
+        <input type="text" class="input-area" id="inputArea" placeholder="Start typing here..." autofocus>
+        
+        <button class="btn" onclick="startTest()">🔄 New Test</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const sampleTexts = [
+            "The quick brown fox jumps over the lazy dog. This is a classic typing test sentence.",
+            "Programming is the art of telling another human what you want the computer to do.",
+            "The only way to learn a new programming language is by writing programs in it.",
+            "Simplicity is the soul of efficiency. Keep your code clean and organized.",
+            "Practice makes perfect. Keep typing and you will improve your speed over time.",
+            "The best time to start was yesterday. The next best time is right now.",
+            "Success is not final, failure is not fatal: it is the courage to continue that counts."
+        ];
+
+        let currentText = '';
+        let startTime = null;
+        let timerInterval = null;
+        let elapsedTime = 0;
+        let isTestActive = false;
+        let charIndex = 0;
+        let errors = 0;
+        let totalChars = 0;
+
+        function startTest() {
+            // Reset everything
+            clearInterval(timerInterval);
+            startTime = null;
+            elapsedTime = 0;
+            charIndex = 0;
+            errors = 0;
+            totalChars = 0;
+            isTestActive = false;
+            
+            // Select random text
+            currentText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+            
+            // Render text
+            renderText();
+            
+            // Reset stats
+            document.getElementById('wpm').textContent = '0';
+            document.getElementById('accuracy').textContent = '100%';
+            document.getElementById('time').textContent = '0s';
+            document.getElementById('chars').textContent = `0/${currentText.length}`;
+            
+            // Enable input
+            const input = document.getElementById('inputArea');
+            input.value = '';
+            input.disabled = false;
+            input.placeholder = 'Start typing here...';
+            input.focus();
+            
+            showToast('🔄 New test ready! Start typing...');
+        }
+
+        function renderText() {
+            const container = document.getElementById('textDisplay');
+            container.innerHTML = '';
+            
+            currentText.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.dataset.index = index;
+                if (index === 0) span.classList.add('current');
+                container.appendChild(span);
+            });
+        }
+
+        function updateDisplay() {
+            const chars = document.querySelectorAll('.char');
+            
+            // Update each character
+            chars.forEach((span, index) => {
+                span.className = 'char';
+                if (index < charIndex) {
+                    // Completed characters
+                    span.classList.add('completed');
+                } else if (index === charIndex) {
+                    // Current character
+                    span.classList.add('current');
+                }
+            });
+            
+            // Update char count
+            document.getElementById('chars').textContent = `${charIndex}/${currentText.length}`;
+            
+            // Check if complete
+            if (charIndex === currentText.length) {
+                completeTest();
+            }
+        }
+
+        function checkInput() {
+            const input = document.getElementById('inputArea');
+            const typed = input.value;
+            
+            if (!isTestActive && typed.length > 0) {
+                // Start the test
+                isTestActive = true;
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 100);
+            }
+            
+            charIndex = typed.length;
+            totalChars = typed.length;
+            
+            // Check for errors
+            let errorCount = 0;
+            for (let i = 0; i < typed.length && i < currentText.length; i++) {
+                if (typed[i] !== currentText[i]) {
+                    errorCount++;
+                }
+            }
+            errors = errorCount;
+            
+            // Update display
+            const chars = document.querySelectorAll('.char');
+            chars.forEach((span, index) => {
+                if (index < typed.length) {
+                    if (typed[index] === currentText[index]) {
+                        span.className = 'char correct';
+                    } else {
+                        span.className = 'char wrong';
+                    }
+                } else if (index === typed.length) {
+                    span.className = 'char current';
+                } else {
+                    span.className = 'char';
+                }
+            });
+            
+            // Update accuracy
+            const accuracy = typed.length > 0 
+                ? Math.round(((typed.length - errorCount) / typed.length) * 100) 
+                : 100;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            
+            // Update char count
+            document.getElementById('chars').textContent = `${typed.length}/${currentText.length}`;
+            
+            // Calculate WPM
+            if (typed.length > 0) {
+                const minutes = elapsedTime / 60;
+                const wpm = Math.round((typed.length / 5) / minutes);
+                document.getElementById('wpm').textContent = wpm || 0;
+            }
+            
+            // Check if complete
+            if (typed.length === currentText.length) {
+                completeTest();
+            }
+        }
+
+        function updateTimer() {
+            if (startTime) {
+                elapsedTime = (Date.now() - startTime) / 1000;
+                document.getElementById('time').textContent = `${Math.floor(elapsedTime)}s`;
+                
+                // Update WPM in real-time
+                if (charIndex > 0) {
+                    const minutes = elapsedTime / 60;
+                    const wpm = Math.round((charIndex / 5) / minutes);
+                    document.getElementById('wpm').textContent = wpm || 0;
+                }
+            }
+        }
+
+        function completeTest() {
+            clearInterval(timerInterval);
+            isTestActive = false;
+            document.getElementById('inputArea').disabled = true;
+            
+            // Final stats
+            const accuracy = Math.round(((totalChars - errors) / totalChars) * 100);
+            const minutes = elapsedTime / 60;
+            const wpm = Math.round((totalChars / 5) / minutes);
+            
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            document.getElementById('wpm').textContent = wpm || 0;
+            
+            let message = '';
+            if (wpm > 60 && accuracy > 90) {
+                message = '🌟 Excellent! You\'re a typing pro!';
+            } else if (wpm > 40 && accuracy > 80) {
+                message = '👏 Great job! Keep practicing!';
+            } else if (wpm > 25) {
+                message = '💪 Good start! Practice makes perfect!';
+            } else {
+                message = '📚 Keep going! Speed comes with practice!';
+            }
+            
+            showToast(`✅ Complete! ${wpm} WPM, ${accuracy}% accuracy. ${message}`);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Event listeners
+        document.getElementById('inputArea').addEventListener('input', checkInput);
+
+        // Initialize
+        window.onload = function() {
+            startTest();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Reps Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-main {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-sub {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .result-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .result-detail {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 12px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .exercise-list {
+            margin-top: 12px;
+            text-align: left;
+        }
+        .exercise-list .ex-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.9rem;
+        }
+        .exercise-list .ex-item .ex-name {
+            color: rgba(255,255,255,0.7);
+        }
+        .exercise-list .ex-item .ex-reps {
+            color: #a855f7;
+            font-weight: 600;
+        }
+        @media (max-width: 480px) {
+            .result-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">💪</span>
+        <h1>Exercise Reps Calculator</h1>
+        <p class="desc">Get personalized exercise recommendations based on your fitness level</p>
+        
+        <div class="input-group">
+            <label>Fitness Level</label>
+            <select id="fitnessLevel">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Goal</label>
+            <select id="goal">
+                <option value="strength">Strength (4-6 reps)</option>
+                <option value="hypertrophy" selected>Hypertrophy (8-12 reps)</option>
+                <option value="endurance">Endurance (15-20 reps)</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Sets</label>
+            <select id="sets">
+                <option value="3">3 sets</option>
+                <option value="4" selected>4 sets</option>
+                <option value="5">5 sets</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="calcExercise()">💪 Generate Workout</button>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-main" id="totalReps">32</div>
+            <div class="result-sub">Total Reps (all sets combined)</div>
+            
+            <div class="exercise-list" id="exerciseList">
+                <div class="ex-item">
+                    <span class="ex-name">Push-ups</span>
+                    <span class="ex-reps">8 reps × 4 sets</span>
+                </div>
+                <div class="ex-item">
+                    <span class="ex-name">Squats</span>
+                    <span class="ex-reps">10 reps × 4 sets</span>
+                </div>
+                <div class="ex-item">
+                    <span class="ex-name">Pull-ups</span>
+                    <span class="ex-reps">6 reps × 4 sets</span>
+                </div>
+                <div class="ex-item">
+                    <span class="ex-name">Lunges</span>
+                    <span class="ex-reps">10 reps × 4 sets</span>
+                </div>
+            </div>
+            <div class="result-detail" id="workoutDetail">Total: 4 exercises • 32 reps per set</div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const exercises = {
+            beginner: [
+                { name: 'Push-ups (knee)', minReps: 5, maxReps: 8 },
+                { name: 'Bodyweight Squats', minReps: 8, maxReps: 12 },
+                { name: 'Incline Push-ups', minReps: 6, maxReps: 10 },
+                { name: 'Glute Bridges', minReps: 10, maxReps: 15 },
+                { name: 'Plank Hold', minReps: 20, maxReps: 30, isSeconds: true },
+                { name: 'Wall Sits', minReps: 20, maxReps: 30, isSeconds: true },
+                { name: 'Bird Dogs', minReps: 8, maxReps: 12 },
+                { name: 'Standing Calf Raises', minReps: 12, maxReps: 18 }
+            ],
+            intermediate: [
+                { name: 'Push-ups', minReps: 8, maxReps: 15 },
+                { name: 'Squats', minReps: 10, maxReps: 18 },
+                { name: 'Pull-ups', minReps: 4, maxReps: 10 },
+                { name: 'Lunges', minReps: 10, maxReps: 15 },
+                { name: 'Dips', minReps: 6, maxReps: 12 },
+                { name: 'Plank with Shoulder Taps', minReps: 10, maxReps: 16 },
+                { name: 'Jump Squats', minReps: 8, maxReps: 14 },
+                { name: 'Mountain Climbers', minReps: 12, maxReps: 20 }
+            ],
+            advanced: [
+                { name: 'Archer Push-ups', minReps: 6, maxReps: 12 },
+                { name: 'Pistol Squats', minReps: 4, maxReps: 10 },
+                { name: 'Muscle-ups', minReps: 3, maxReps: 8 },
+                { name: 'Bulgarian Split Squats', minReps: 8, maxReps: 14 },
+                { name: 'Handstand Push-ups', minReps: 3, maxReps: 8 },
+                { name: 'Single-leg Deadlifts', minReps: 8, maxReps: 12 },
+                { name: 'Box Jumps', minReps: 6, maxReps: 12 },
+                { name: 'L-sit Pull-ups', minReps: 4, maxReps: 10 }
+            ]
+        };
+
+        function calcExercise() {
+            const fitnessLevel = document.getElementById('fitnessLevel').value;
+            const goal = document.getElementById('goal').value;
+            const sets = parseInt(document.getElementById('sets').value);
+            
+            // Rep ranges based on goal
+            let repRange;
+            if (goal === 'strength') repRange = [4, 6];
+            else if (goal === 'hypertrophy') repRange = [8, 12];
+            else repRange = [15, 20];
+            
+            // Get exercises for this level
+            const exList = exercises[fitnessLevel];
+            
+            // Shuffle and pick 4 exercises
+            const shuffled = [...exList].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 4);
+            
+            // Generate rep counts
+            const results = selected.map(ex => {
+                let reps;
+                if (ex.isSeconds) {
+                    // For time-based exercises (seconds)
+                    reps = Math.round((repRange[0] + repRange[1]) / 2 * 0.8 + Math.random() * 5);
+                    reps = Math.min(Math.max(reps, repRange[0] * 0.8), repRange[1] * 1.2);
+                } else {
+                    reps = Math.round(repRange[0] + Math.random() * (repRange[1] - repRange[0]));
+                }
+                reps = Math.round(reps);
+                return {
+                    name: ex.name,
+                    reps: reps,
+                    isSeconds: ex.isSeconds || false
+                };
+            });
+            
+            // Update exercise list
+            const listContainer = document.getElementById('exerciseList');
+            listContainer.innerHTML = '';
+            
+            let totalReps = 0;
+            results.forEach(ex => {
+                const div = document.createElement('div');
+                div.className = 'ex-item';
+                const unit = ex.isSeconds ? 'sec' : 'reps';
+                const label = `${ex.reps} ${unit} × ${sets} sets`;
+                div.innerHTML = `
+                    <span class="ex-name">${ex.name}</span>
+                    <span class="ex-reps">${label}</span>
+                `;
+                listContainer.appendChild(div);
+                totalReps += ex.reps;
+            });
+            
+            // Update total
+            document.getElementById('totalReps').textContent = totalReps;
+            document.getElementById('workoutDetail').textContent = 
+                `Total: ${results.length} exercises • ${totalReps} reps per set • ${sets} sets each`;
+            
+            showToast('✅ Workout generated!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        document.getElementById('fitnessLevel').addEventListener('change', calcExercise);
+        document.getElementById('goal').addEventListener('change', calcExercise);
+        document.getElementById('sets').addEventListener('change', calcExercise);
+
+        window.onload = calcExercise;
+    </script>
+</body>
+</html>

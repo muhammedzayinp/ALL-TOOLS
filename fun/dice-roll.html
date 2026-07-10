@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Roller - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        .dice {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            font-family: 'Courier New', monospace;
+        }
+        .dice.rolling {
+            animation: roll 0.5s ease;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(0.9); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .dice .dice-dots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            width: 60px;
+            height: 60px;
+            padding: 8px;
+        }
+        .dice .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.8);
+            display: none;
+        }
+        .dice .dot.show {
+            display: block;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .result-sum {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .result-sum strong {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.3rem;
+        }
+        
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            min-height: 50px;
+        }
+        .history-item {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .history-empty {
+            color: rgba(255,255,255,0.2);
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎲</span>
+        <h1>Dice Roller</h1>
+        <p class="desc">Roll virtual dice with different types and quantities</p>
+        
+        <div class="dice-container" id="diceContainer">
+            <div class="dice" id="dice1">
+                <div class="dice-dots" id="dots1"></div>
+            </div>
+            <div class="dice" id="dice2">
+                <div class="dice-dots" id="dots2"></div>
+            </div>
+            <div class="dice" id="dice3">
+                <div class="dice-dots" id="dots3"></div>
+            </div>
+        </div>
+        
+        <div class="result-sum">
+            Total: <strong id="totalSum">0</strong>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Number of Dice</label>
+                <input type="number" id="numDice" value="2" min="1" max="6">
+            </div>
+            <div class="control-group">
+                <label>Sides</label>
+                <select id="diceType">
+                    <option value="4">D4</option>
+                    <option value="6" selected>D6</option>
+                    <option value="8">D8</option>
+                    <option value="10">D10</option>
+                    <option value="12">D12</option>
+                    <option value="20">D20</option>
+                    <option value="100">D100</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Modifier</label>
+                <input type="number" id="modifier" value="0">
+            </div>
+        </div>
+        
+        <button class="btn" onclick="rollDice()">🎲 Roll Dice</button>
+        
+        <div class="history-grid" id="historyGrid">
+            <span class="history-empty">No rolls yet</span>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let history = [];
+
+        function rollDice() {
+            const numDice = parseInt(document.getElementById('numDice').value) || 2;
+            const sides = parseInt(document.getElementById('diceType').value);
+            const modifier = parseInt(document.getElementById('modifier').value) || 0;
+            
+            if (numDice < 1 || numDice > 6) {
+                showToast('⚠️ Please use 1-6 dice');
+                return;
+            }
+            
+            // Show dice based on count
+            const diceElements = document.querySelectorAll('.dice');
+            diceElements.forEach((el, i) => {
+                el.style.display = i < numDice ? 'flex' : 'none';
+            });
+            
+            // Roll each die
+            const results = [];
+            let total = 0;
+            
+            diceElements.forEach((el, i) => {
+                if (i < numDice) {
+                    const value = Math.floor(Math.random() * sides) + 1;
+                    results.push(value);
+                    total += value;
+                    
+                    // Update dice display
+                    const dotsContainer = document.getElementById(`dots${i+1}`);
+                    updateDiceDisplay(dotsContainer, value, sides);
+                    
+                    // Animate
+                    el.classList.remove('rolling');
+                    setTimeout(() => el.classList.add('rolling'), 10);
+                }
+            });
+            
+            // Add modifier
+            total += modifier;
+            
+            // Update total
+            document.getElementById('totalSum').textContent = total;
+            
+            // Add to history
+            const rollStr = results.join('+');
+            const historyEntry = modifier !== 0 ? `${rollStr}+${modifier}=${total}` : `${rollStr}=${total}`;
+            history.push(historyEntry);
+            if (history.length > 20) history.shift();
+            renderHistory();
+            
+            showToast(`🎲 Rolled: ${historyEntry}`);
+        }
+
+        function updateDiceDisplay(container, value, sides) {
+            container.innerHTML = '';
+            
+            if (sides === 100) {
+                // For D100, just show the number
+                container.style.display = 'flex';
+                container.style.alignItems = 'center';
+                container.style.justifyContent = 'center';
+                container.style.fontSize = '2rem';
+                container.style.fontWeight = '700';
+                container.textContent = value;
+                return;
+            }
+            
+            container.style.display = 'grid';
+            container.style.fontSize = 'inherit';
+            container.textContent = '';
+            
+            // Dot positions for different numbers
+            const dotMap = {
+                1: [[1,1]],
+                2: [[0,0], [2,2]],
+                3: [[0,0], [1,1], [2,2]],
+                4: [[0,0], [0,2], [2,0], [2,2]],
+                5: [[0,0], [0,2], [1,1], [2,0], [2,2]],
+                6: [[0,0], [0,2], [1,0], [1,2], [2,0], [2,2]]
+            };
+            
+            const positions = dotMap[value] || [];
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'dot';
+                    if (positions.some(p => p[0] === row && p[1] === col)) {
+                        dot.classList.add('show');
+                    }
+                    container.appendChild(dot);
+                }
+            }
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            
+            if (history.length === 0) {
+                grid.innerHTML = '<span class="history-empty">No rolls yet</span>';
+                return;
+            }
+            
+            const reversed = [...history].reverse();
+            reversed.forEach(entry => {
+                const item = document.createElement('span');
+                item.className = 'history-item';
+                item.textContent = entry;
+                grid.appendChild(item);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Roll on Enter key
+        document.getElementById('numDice').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') rollDice();
+        });
+        document.getElementById('diceType').addEventListener('change', rollDice);
+        document.getElementById('modifier').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') rollDice();
+        });
+
+        // Initial roll
+        window.onload = function() {
+            setTimeout(rollDice, 100);
+        };
+    </script>
+</body>
+</html>

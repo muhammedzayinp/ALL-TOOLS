@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .countdown-display {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            margin: 16px 0;
+        }
+        .countdown-display .time {
+            font-size: 4.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+        }
+        .countdown-display .time.warning {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .countdown-display .time.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .countdown-display .time.ended {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .countdown-display .label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.85rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+        .input-group input[type="datetime-local"] {
+            color-scheme: dark;
+        }
+        .input-group input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .control-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+        .control-btn:hover { 
+            transform: translateY(-2px); 
+        }
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        .control-btn.start {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+        }
+        .control-btn.start:hover {
+            box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+        }
+        .control-btn.stop {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+        .control-btn.stop:hover {
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+        .control-btn.reset {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .control-btn.reset:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .control-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .preset-btn {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .preset-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border-color: rgba(255,255,255,0.15);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">⏳</span>
+        <h1>Countdown Timer</h1>
+        <p class="desc">Set a countdown to any date and time</p>
+        
+        <div class="input-group">
+            <label>Target Date & Time</label>
+            <input type="datetime-local" id="targetDateTime">
+        </div>
+        
+        <div class="preset-grid" id="presetGrid"></div>
+        
+        <div class="countdown-display">
+            <div class="time" id="displayTime">00:00:00:00</div>
+            <div class="label" id="statusLabel">Ready</div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn start" id="startBtn" onclick="startCountdown()">▶ Start</button>
+            <button class="control-btn reset" onclick="resetCountdown()">↺ Reset</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let countdownInterval = null;
+        let isRunning = false;
+        let targetTime = null;
+        let isEnded = false;
+
+        const presets = [
+            { label: '1 Min', minutes: 1 },
+            { label: '5 Min', minutes: 5 },
+            { label: '10 Min', minutes: 10 },
+            { label: '30 Min', minutes: 30 },
+            { label: '1 Hour', hours: 1 },
+            { label: '2 Hours', hours: 2 },
+            { label: '1 Day', days: 1 },
+            { label: '7 Days', days: 7 }
+        ];
+
+        function initPresets() {
+            const grid = document.getElementById('presetGrid');
+            presets.forEach(preset => {
+                const btn = document.createElement('div');
+                btn.className = 'preset-btn';
+                btn.textContent = preset.label;
+                btn.onclick = () => {
+                    const now = new Date();
+                    let target = new Date(now);
+                    if (preset.minutes) target.setMinutes(target.getMinutes() + preset.minutes);
+                    if (preset.hours) target.setHours(target.getHours() + preset.hours);
+                    if (preset.days) target.setDate(target.getDate() + preset.days);
+                    
+                    const year = target.getFullYear();
+                    const month = String(target.getMonth() + 1).padStart(2, '0');
+                    const day = String(target.getDate()).padStart(2, '0');
+                    const hours = String(target.getHours()).padStart(2, '0');
+                    const minutes = String(target.getMinutes()).padStart(2, '0');
+                    
+                    document.getElementById('targetDateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    resetCountdown();
+                    showToast(`✅ Preset set: ${preset.label}`);
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function startCountdown() {
+            const input = document.getElementById('targetDateTime').value;
+            if (!input) {
+                showToast('⚠️ Please set a target date and time');
+                return;
+            }
+            
+            targetTime = new Date(input);
+            const now = new Date();
+            
+            if (targetTime <= now) {
+                showToast('⚠️ Target time must be in the future');
+                return;
+            }
+            
+            if (isRunning) {
+                // Pause
+                clearInterval(countdownInterval);
+                isRunning = false;
+                document.getElementById('startBtn').textContent = '▶ Resume';
+                document.getElementById('startBtn').className = 'control-btn start';
+                document.getElementById('statusLabel').textContent = 'Paused';
+                showToast('⏸️ Countdown paused');
+                return;
+            }
+            
+            // Start or Resume
+            isRunning = true;
+            isEnded = false;
+            document.getElementById('startBtn').textContent = '⏸ Pause';
+            document.getElementById('startBtn').className = 'control-btn stop';
+            document.getElementById('statusLabel').textContent = 'Running';
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            countdownInterval = setInterval(updateCountdown, 100);
+            showToast('▶️ Countdown started');
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = targetTime - now;
+            
+            if (diff <= 0) {
+                // Countdown ended
+                clearInterval(countdownInterval);
+                isRunning = false;
+                isEnded = true;
+                document.getElementById('displayTime').textContent = '🎉 TIME\'S UP! 🎉';
+                document.getElementById('displayTime').className = 'time ended';
+                document.getElementById('statusLabel').textContent = 'Countdown Complete!';
+                document.getElementById('startBtn').textContent = '▶ Start';
+                document.getElementById('startBtn').className = 'control-btn start';
+                showToast('🎉 Countdown complete!');
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            let timeStr = `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            document.getElementById('displayTime').textContent = timeStr;
+            
+            // Change color based on remaining time
+            const totalSeconds = days * 86400 + hours * 3600 + minutes * 60 + seconds;
+            if (totalSeconds < 60) {
+                document.getElementById('displayTime').className = 'time danger';
+            } else if (totalSeconds < 300) {
+                document.getElementById('displayTime').className = 'time warning';
+            } else {
+                document.getElementById('displayTime').className = 'time';
+            }
+            
+            document.getElementById('statusLabel').textContent = `Remaining: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function resetCountdown() {
+            clearInterval(countdownInterval);
+            isRunning = false;
+            isEnded = false;
+            
+            document.getElementById('displayTime').textContent = '00:00:00:00';
+            document.getElementById('displayTime').className = 'time';
+            document.getElementById('statusLabel').textContent = 'Ready';
+            document.getElementById('startBtn').textContent = '▶ Start';
+            document.getElementById('startBtn').className = 'control-btn start';
+            
+            const input = document.getElementById('targetDateTime').value;
+            if (input) {
+                const target = new Date(input);
+                const now = new Date();
+                if (target > now) {
+                    const diff = target - now;
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    document.getElementById('displayTime').textContent = `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    document.getElementById('statusLabel').textContent = 'Ready to start';
+                }
+            }
+            
+            showToast('↺ Countdown reset');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Set default target to 1 hour from now
+        function setDefaultTarget() {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('targetDateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            resetCountdown();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                startCountdown();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                resetCountdown();
+            }
+        });
+
+        // Initialize
+        initPresets();
+        setDefaultTarget();
+    </script>
+</body>
+</html>

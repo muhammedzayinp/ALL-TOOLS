@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Joke Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .joke-container {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 16px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .joke-container .joke-setup {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+        }
+        .joke-container .joke-punchline {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: center;
+            color: rgba(168, 85, 247, 0.9);
+            margin-top: 12px;
+            font-weight: 600;
+            display: none;
+        }
+        .joke-container .joke-punchline.show {
+            display: block;
+            animation: reveal 0.5s ease;
+        }
+        @keyframes reveal {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .joke-container .joke-type {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .joke-container .joke-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">😂</span>
+        <h1>Random Joke Generator</h1>
+        <p class="desc">Get a random joke to brighten your day</p>
+        
+        <div class="joke-container" id="jokeContainer">
+            <div class="joke-emoji" id="jokeEmoji">🤣</div>
+            <div class="joke-setup" id="jokeSetup">Why don't scientists trust atoms?</div>
+            <div class="joke-punchline" id="jokePunchline">Because they make up everything!</div>
+            <div class="joke-type" id="jokeType">😂 Humor</div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Category</label>
+                <select id="categoryFilter" onchange="generateJoke()">
+                    <option value="all">All Categories</option>
+                    <option value="dad">Dad Jokes</option>
+                    <option value="pun">Puns</option>
+                    <option value="knock">Knock Knock</option>
+                    <option value="tech">Tech Jokes</option>
+                    <option value="animals">Animals</option>
+                    <option value="food">Food</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Show Punchline</label>
+                <select id="autoReveal" onchange="generateJoke()">
+                    <option value="auto">Auto Reveal</option>
+                    <option value="manual" selected>Click to Reveal</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="generateJoke()">😂 New Joke</button>
+        <button class="btn-secondary" onclick="copyJoke()">📋 Copy Joke</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const jokes = [
+            // Dad Jokes
+            { setup: "Why don't scientists trust atoms?", punchline: "Because they make up everything!", category: "dad", emoji: "🧪" },
+            { setup: "What do you call a fish with no eyes?", punchline: "A fsh!", category: "dad", emoji: "🐟" },
+            { setup: "Why did the scarecrow win an award?", punchline: "Because he was outstanding in his field!", category: "dad", emoji: "🌾" },
+            { setup: "What do you call a fake noodle?", punchline: "An impasta!", category: "dad", emoji: "🍝" },
+            { setup: "Why did the bicycle fall over?", punchline: "Because it was two-tired!", category: "dad", emoji: "🚲" },
+            { setup: "What do you call a bear with no teeth?", punchline: "A gummy bear!", category: "dad", emoji: "🐻" },
+            
+            // Puns
+            { setup: "I used to play piano by ear.", punchline: "But now I use my hands.", category: "pun", emoji: "🎹" },
+            { setup: "I'm reading a book on anti-gravity.", punchline: "It's impossible to put down!", category: "pun", emoji: "📚" },
+            { setup: "I told my wife she was drawing her eyebrows too high.", punchline: "She looked surprised.", category: "pun", emoji: "🤨" },
+            { setup: "What do you call a sleeping dinosaur?", punchline: "A dino-snore!", category: "pun", emoji: "🦕" },
+            
+            // Knock Knock
+            { setup: "Knock knock! Who's there? Lettuce.", punchline: "Lettuce in, it's cold out here!", category: "knock", emoji: "🥬" },
+            { setup: "Knock knock! Who's there? Cow says.", punchline: "Cow says? No, cow says moo!", category: "knock", emoji: "🐄" },
+            { setup: "Knock knock! Who's there? Dish.", punchline: "Dish is the police, open up!", category: "knock", emoji: "👮" },
+            { setup: "Knock knock! Who's there? Boo.", punchline: "Boo who? Don't cry, it's just a joke!", category: "knock", emoji: "👻" },
+            
+            // Tech Jokes
+            { setup: "Why do programmers prefer dark mode?", punchline: "Because light attracts bugs!", category: "tech", emoji: "💻" },
+            { setup: "What is a computer's favorite snack?", punchline: "Microchips!", category: "tech", emoji: "🖥️" },
+            { setup: "Why did the developer go broke?", punchline: "Because he used up all his cache!", category: "tech", emoji: "💰" },
+            { setup: "What do you call a computer that sings?", punchline: "A Dell!", category: "tech", emoji: "🎵" },
+            { setup: "Why was the JavaScript developer sad?", punchline: "Because he didn't know how to 'null' his feelings!", category: "tech", emoji: "😢" },
+            { setup: "What's a robot's favorite genre of music?", punchline: "Heavy metal!", category: "tech", emoji: "🤖" },
+            
+            // Animals
+            { setup: "What do you call a sleeping bull?", punchline: "A bulldozer!", category: "animals", emoji: "🐂" },
+            { setup: "Why did the chicken cross the road?", punchline: "To get to the other side!", category: "animals", emoji: "🐔" },
+            { setup: "What's a cat's favorite color?", punchline: "Purr-ple!", category: "animals", emoji: "🐱" },
+            { setup: "What do you call a dog magician?", punchline: "A labracadabrador!", category: "animals", emoji: "🐕" },
+            { setup: "Why do seagulls fly over the sea?", punchline: "Because if they flew over the bay, they'd be bagels!", category: "animals", emoji: "🦅" },
+            
+            // Food
+            { setup: "What do you call cheese that isn't yours?", punchline: "Nacho cheese!", category: "food", emoji: "🧀" },
+            { setup: "Why did the tomato turn red?", punchline: "Because it saw the salad dressing!", category: "food", emoji: "🍅" },
+            { setup: "What do you call a sad strawberry?", punchline: "A blueberry!", category: "food", emoji: "🍓" },
+            { setup: "Why did the banana go to the doctor?", punchline: "Because it wasn't peeling well!", category: "food", emoji: "🍌" },
+            { setup: "What's a ghost's favorite dessert?", punchline: "Boo-berry pie!", category: "food", emoji: "👻" }
+        ];
+
+        let currentJoke = null;
+
+        function generateJoke() {
+            const category = document.getElementById('categoryFilter').value;
+            const autoReveal = document.getElementById('autoReveal').value;
+            
+            let filtered = jokes;
+            if (category !== 'all') {
+                filtered = filtered.filter(j => j.category === category);
+            }
+            
+            if (filtered.length === 0) {
+                showToast('⚠️ No jokes match your category');
+                return;
+            }
+            
+            currentJoke = filtered[Math.floor(Math.random() * filtered.length)];
+            
+            document.getElementById('jokeEmoji').textContent = currentJoke.emoji;
+            document.getElementById('jokeSetup').textContent = currentJoke.setup;
+            
+            const punchlineEl = document.getElementById('jokePunchline');
+            punchlineEl.textContent = currentJoke.punchline;
+            punchlineEl.className = 'joke-punchline';
+            
+            const typeLabels = {
+                dad: '😂 Dad Joke',
+                pun: '😄 Pun',
+                knock: '🚪 Knock Knock',
+                tech: '💻 Tech Joke',
+                animals: '🐾 Animals',
+                food: '🍽️ Food'
+            };
+            document.getElementById('jokeType').textContent = typeLabels[currentJoke.category] || currentJoke.category;
+            
+            // Auto reveal or hide
+            if (autoReveal === 'auto') {
+                setTimeout(() => {
+                    punchlineEl.classList.add('show');
+                }, 800);
+            }
+            
+            // Animation
+            const container = document.getElementById('jokeContainer');
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.style.transition = 'opacity 0.3s';
+                container.style.opacity = '1';
+            }, 50);
+        }
+
+        function revealPunchline() {
+            const punchlineEl = document.getElementById('jokePunchline');
+            if (!punchlineEl.classList.contains('show')) {
+                punchlineEl.classList.add('show');
+            }
+        }
+
+        function copyJoke() {
+            if (!currentJoke) {
+                showToast('⚠️ Generate a joke first');
+                return;
+            }
+            
+            const text = `"${currentJoke.setup}" — ${currentJoke.punchline}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Joke copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Joke copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Click on joke to reveal punchline
+        document.getElementById('jokeContainer').addEventListener('click', revealPunchline);
+
+        // Generate on load
+        window.onload = function() {
+            generateJoke();
+        };
+    </script>
+</body>
+</html>

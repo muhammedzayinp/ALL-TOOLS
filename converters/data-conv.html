@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Storage Converter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        .result-detail {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 8px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .swap-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swap-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(180deg);
+        }
+        .binary-info {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            margin-top: 4px;
+            text-align: center;
+        }
+        @media (max-width: 480px) {
+            .row-2col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">💾</span>
+        <h1>Data Storage Converter</h1>
+        <p class="desc">Convert between different data storage units</p>
+        
+        <div class="row-2col">
+            <div class="input-group">
+                <label>From</label>
+                <select id="fromUnit" onchange="convert()">
+                    <option value="bit">Bit</option>
+                    <option value="byte">Byte</option>
+                    <option value="kilobyte">Kilobyte (KB)</option>
+                    <option value="megabyte">Megabyte (MB)</option>
+                    <option value="gigabyte">Gigabyte (GB)</option>
+                    <option value="terabyte">Terabyte (TB)</option>
+                    <option value="petabyte">Petabyte (PB)</option>
+                    <option value="kibibyte">Kibibyte (KiB)</option>
+                    <option value="mebibyte">Mebibyte (MiB)</option>
+                    <option value="gibibyte">Gibibyte (GiB)</option>
+                    <option value="tebibyte">Tebibyte (TiB)</option>
+                    <option value="pebibyte">Pebibyte (PiB)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>To</label>
+                <select id="toUnit" onchange="convert()">
+                    <option value="bit">Bit</option>
+                    <option value="byte">Byte</option>
+                    <option value="kilobyte">Kilobyte (KB)</option>
+                    <option value="megabyte" selected>Megabyte (MB)</option>
+                    <option value="gigabyte">Gigabyte (GB)</option>
+                    <option value="terabyte">Terabyte (TB)</option>
+                    <option value="petabyte">Petabyte (PB)</option>
+                    <option value="kibibyte">Kibibyte (KiB)</option>
+                    <option value="mebibyte">Mebibyte (MiB)</option>
+                    <option value="gibibyte">Gibibyte (GiB)</option>
+                    <option value="tebibyte">Tebibyte (TiB)</option>
+                    <option value="pebibyte">Pebibyte (PiB)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin: 8px 0;">
+            <button class="swap-btn" onclick="swapUnits()">⇄</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Value</label>
+            <input type="number" id="inputValue" value="1" step="any" oninput="convert()">
+        </div>
+        
+        <div class="result-container">
+            <div class="result-value" id="resultValue">0.00</div>
+            <div class="result-label" id="resultLabel">megabyte (MB)</div>
+            <div class="result-detail" id="resultDetail">1 byte = 0.000001 MB</div>
+        </div>
+        
+        <div class="binary-info">⚡ Decimal (KB, MB, GB) vs Binary (KiB, MiB, GiB)</div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const conversions = {
+            bit: 8,
+            byte: 1,
+            kilobyte: 0.001,
+            megabyte: 0.000001,
+            gigabyte: 1e-9,
+            terabyte: 1e-12,
+            petabyte: 1e-15,
+            kibibyte: 0.0009765625,
+            mebibyte: 9.53674e-7,
+            gibibyte: 9.31323e-10,
+            tebibyte: 9.09495e-13,
+            pebibyte: 8.88178e-16
+        };
+
+        const labels = {
+            bit: 'bit',
+            byte: 'byte',
+            kilobyte: 'kilobyte (KB)',
+            megabyte: 'megabyte (MB)',
+            gigabyte: 'gigabyte (GB)',
+            terabyte: 'terabyte (TB)',
+            petabyte: 'petabyte (PB)',
+            kibibyte: 'kibibyte (KiB)',
+            mebibyte: 'mebibyte (MiB)',
+            gibibyte: 'gibibyte (GiB)',
+            tebibyte: 'tebibyte (TiB)',
+            pebibyte: 'pebibyte (PiB)'
+        };
+
+        function convert() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const value = parseFloat(document.getElementById('inputValue').value);
+            
+            if (isNaN(value) || value === '') {
+                document.getElementById('resultValue').textContent = '—';
+                document.getElementById('resultLabel').textContent = labels[toUnit];
+                document.getElementById('resultDetail').textContent = 'Please enter a valid number';
+                return;
+            }
+            
+            const fromFactor = conversions[fromUnit];
+            const toFactor = conversions[toUnit];
+            const result = (value / fromFactor) * toFactor;
+            
+            const formatted = result.toFixed(6).replace(/\.?0+$/, '');
+            document.getElementById('resultValue').textContent = formatted;
+            document.getElementById('resultLabel').textContent = labels[toUnit];
+            document.getElementById('resultDetail').textContent = 
+                `${value} ${labels[fromUnit]} = ${formatted} ${labels[toUnit]}`;
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('fromUnit');
+            const toSelect = document.getElementById('toUnit');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            convert();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            convert();
+        };
+    </script>
+</body>
+</html>

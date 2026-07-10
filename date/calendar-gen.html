@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group select, .control-group input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .control-group select:focus, .control-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .calendar-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .calendar-header .month-year {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .calendar-header .nav-btn {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .calendar-header .nav-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-grid .day-name {
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px;
+            font-weight: 600;
+        }
+        .calendar-grid .day {
+            text-align: center;
+            padding: 10px 4px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: rgba(255,255,255,0.6);
+        }
+        .calendar-grid .day:hover {
+            background: rgba(255,255,255,0.05);
+            transform: scale(1.05);
+        }
+        .calendar-grid .day.other-month {
+            color: rgba(255,255,255,0.15);
+        }
+        .calendar-grid .day.today {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+        }
+        .calendar-grid .day.weekend {
+            color: rgba(239, 68, 68, 0.5);
+        }
+        .calendar-grid .day.weekend.other-month {
+            color: rgba(239, 68, 68, 0.15);
+        }
+        
+        .calendar-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📅</span>
+        <h1>Calendar Generator</h1>
+        <p class="desc">Generate and view any month/year calendar</p>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Month</label>
+                <select id="monthSelect" onchange="generateCalendar()">
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Year</label>
+                <input type="number" id="yearInput" value="2024" min="1900" max="2100" onchange="generateCalendar()">
+            </div>
+            <div class="control-group">
+                <label>First Day</label>
+                <select id="firstDaySelect" onchange="generateCalendar()">
+                    <option value="0">Sunday</option>
+                    <option value="1" selected>Monday</option>
+                    <option value="6">Saturday</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="nav-btn" onclick="prevMonth()">‹</button>
+                <span class="month-year" id="monthYearDisplay">January 2024</span>
+                <button class="nav-btn" onclick="nextMonth()">›</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-footer">
+                <span id="todayDisplay">Today: -</span>
+                <span id="daysInMonthDisplay">Days in month: -</span>
+            </div>
+        </div>
+        
+        <button class="btn-secondary" onclick="goToToday()">📅 Go to Today</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentMonth = 0;
+        let currentYear = 2024;
+
+        function generateCalendar() {
+            const month = parseInt(document.getElementById('monthSelect').value);
+            const year = parseInt(document.getElementById('yearInput').value);
+            const firstDay = parseInt(document.getElementById('firstDaySelect').value);
+            
+            currentMonth = month;
+            currentYear = year;
+            
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month
+            const firstDayOfMonth = new Date(year, month, 1);
+            let startDay = firstDayOfMonth.getDay();
+            
+            // Adjust for first day of week
+            startDay = (startDay - firstDay + 7) % 7;
+            
+            // Get days in month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            // Get today
+            const today = new Date();
+            const todayDate = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Day names
+            const dayNamesOrdered = [...dayNames.slice(firstDay), ...dayNames.slice(0, firstDay)];
+            dayNamesOrdered.forEach(name => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = name;
+                grid.appendChild(div);
+            });
+            
+            // Previous month days
+            const prevMonthDays = startDay;
+            for (let i = prevMonthDays - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const div = document.createElement('div');
+                div.className = 'day other-month';
+                div.textContent = day;
+                
+                // Check if it's a weekend
+                const dayOfWeek = (firstDay + i) % 7;
+                if (dayOfWeek === 5 || dayOfWeek === 6) {
+                    div.classList.add('weekend');
+                }
+                
+                grid.appendChild(div);
+            }
+            
+            // Current month days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const div = document.createElement('div');
+                div.className = 'day';
+                div.textContent = i;
+                
+                // Check if today
+                if (i === todayDate && month === todayMonth && year === todayYear) {
+                    div.classList.add('today');
+                }
+                
+                // Check if weekend
+                const dayOfWeek = (startDay + i - 1) % 7;
+                if (dayOfWeek === 5 || dayOfWeek === 6) {
+                    div.classList.add('weekend');
+                }
+                
+                // Click handler to show date info
+                div.onclick = () => {
+                    const date = new Date(year, month, i);
+                    showToast(`📅 ${date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}`);
+                };
+                
+                grid.appendChild(div);
+            }
+            
+            // Next month days
+            const totalDays = prevMonthDays + daysInMonth;
+            const remainingDays = (7 - (totalDays % 7)) % 7;
+            for (let i = 1; i <= remainingDays; i++) {
+                const div = document.createElement('div');
+                div.className = 'day other-month';
+                div.textContent = i;
+                
+                const dayOfWeek = (startDay + daysInMonth + i - 1) % 7;
+                if (dayOfWeek === 5 || dayOfWeek === 6) {
+                    div.classList.add('weekend');
+                }
+                
+                grid.appendChild(div);
+            }
+            
+            // Update footer
+            document.getElementById('todayDisplay').textContent = `Today: ${today.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}`;
+            document.getElementById('daysInMonthDisplay').textContent = `Days in month: ${daysInMonth}`;
+        }
+
+        function prevMonth() {
+            let month = parseInt(document.getElementById('monthSelect').value);
+            let year = parseInt(document.getElementById('yearInput').value);
+            
+            month--;
+            if (month < 0) {
+                month = 11;
+                year--;
+            }
+            
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('yearInput').value = year;
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            let month = parseInt(document.getElementById('monthSelect').value);
+            let year = parseInt(document.getElementById('yearInput').value);
+            
+            month++;
+            if (month > 11) {
+                month = 0;
+                year++;
+            }
+            
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('yearInput').value = year;
+            generateCalendar();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            document.getElementById('monthSelect').value = today.getMonth();
+            document.getElementById('yearInput').value = today.getFullYear();
+            generateCalendar();
+            showToast('📅 Jumped to today');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevMonth();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextMonth();
+            } else if (e.key === 't' || e.key === 'T') {
+                e.preventDefault();
+                goToToday();
+            }
+        });
+
+        // Initialize
+        const today = new Date();
+        document.getElementById('monthSelect').value = today.getMonth();
+        document.getElementById('yearInput').value = today.getFullYear();
+        generateCalendar();
+    </script>
+</body>
+</html>

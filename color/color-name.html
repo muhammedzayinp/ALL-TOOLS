@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Name Finder - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .color-display {
+            width: 100%;
+            height: 150px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #6366f1;
+            transition: all 0.5s ease;
+        }
+        .color-display .color-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 8px 32px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .color-display .color-hex {
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .input-group input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input[type="color"] {
+            width: 60px;
+            height: 48px;
+            padding: 2px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .info-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .info-item .value.red { color: #ef4444; }
+        .info-item .value.green { color: #10b981; }
+        .info-item .value.blue { color: #3b82f6; }
+        
+        .color-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 16px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .color-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .color-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+        }
+        .color-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .color-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .color-item .swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+        .color-item .color-info {
+            flex: 1;
+        }
+        .color-item .color-info .name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .color-item .color-info .hex {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            font-family: 'Courier New', monospace;
+        }
+        .color-item .rgb-info {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🏷️</span>
+        <h1>Color Name Finder</h1>
+        <p class="desc">Find the name of any color by its hex code</p>
+        
+        <div class="color-display" id="colorDisplay">
+            <span class="color-name" id="colorName">Royal Blue</span>
+            <span class="color-hex" id="colorHex">#6366F1</span>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="hexInput" value="#6366f1" placeholder="#000000" oninput="findColor()">
+            <input type="color" id="colorPicker" value="#6366f1" onchange="updateFromPicker()">
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Red</div>
+                <div class="value red" id="redValue">99</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Green</div>
+                <div class="value green" id="greenValue">102</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Blue</div>
+                <div class="value blue" id="blueValue">241</div>
+            </div>
+        </div>
+        
+        <div class="color-list" id="colorList"></div>
+        
+        <button class="btn-secondary" onclick="copyName()">📋 Copy Color Name</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const colorDatabase = [
+            { name: 'Black', hex: '#000000' },
+            { name: 'White', hex: '#ffffff' },
+            { name: 'Red', hex: '#ff0000' },
+            { name: 'Green', hex: '#00ff00' },
+            { name: 'Blue', hex: '#0000ff' },
+            { name: 'Yellow', hex: '#ffff00' },
+            { name: 'Cyan', hex: '#00ffff' },
+            { name: 'Magenta', hex: '#ff00ff' },
+            { name: 'Silver', hex: '#c0c0c0' },
+            { name: 'Gray', hex: '#808080' },
+            { name: 'Maroon', hex: '#800000' },
+            { name: 'Olive', hex: '#808000' },
+            { name: 'Green', hex: '#008000' },
+            { name: 'Purple', hex: '#800080' },
+            { name: 'Teal', hex: '#008080' },
+            { name: 'Navy', hex: '#000080' },
+            { name: 'Coral', hex: '#ff7f50' },
+            { name: 'Tomato', hex: '#ff6347' },
+            { name: 'Orange', hex: '#ffa500' },
+            { name: 'Gold', hex: '#ffd700' },
+            { name: 'Lime', hex: '#00ff00' },
+            { name: 'Turquoise', hex: '#40e0d0' },
+            { name: 'Sky Blue', hex: '#87ceeb' },
+            { name: 'Royal Blue', hex: '#4169e1' },
+            { name: 'Indigo', hex: '#4b0082' },
+            { name: 'Violet', hex: '#ee82ee' },
+            { name: 'Pink', hex: '#ffc0cb' },
+            { name: 'Hot Pink', hex: '#ff69b4' },
+            { name: 'Crimson', hex: '#dc143c' },
+            { name: 'Salmon', hex: '#fa8072' },
+            { name: 'Khaki', hex: '#f0e68c' },
+            { name: 'Plum', hex: '#dda0dd' },
+            { name: 'Orchid', hex: '#da70d6' },
+            { name: 'Medium Purple', hex: '#9370db' },
+            { name: 'Medium Blue', hex: '#0000cd' },
+            { name: 'Dark Blue', hex: '#00008b' },
+            { name: 'Dark Cyan', hex: '#008b8b' },
+            { name: 'Dark Goldenrod', hex: '#b8860b' },
+            { name: 'Dark Green', hex: '#006400' },
+            { name: 'Dark Khaki', hex: '#bdb76b' },
+            { name: 'Dark Magenta', hex: '#8b008b' },
+            { name: 'Dark Olive Green', hex: '#556b2f' },
+            { name: 'Dark Orange', hex: '#ff8c00' },
+            { name: 'Dark Orchid', hex: '#9932cc' },
+            { name: 'Dark Red', hex: '#8b0000' },
+            { name: 'Dark Salmon', hex: '#e9967a' },
+            { name: 'Dark Turquoise', hex: '#00ced1' },
+            { name: 'Dark Violet', hex: '#9400d3' },
+            { name: 'Deep Pink', hex: '#ff1493' },
+            { name: 'Deep Sky Blue', hex: '#00bfff' },
+            { name: 'Dodger Blue', hex: '#1e90ff' },
+            { name: 'Firebrick', hex: '#b22222' },
+            { name: 'Forest Green', hex: '#228b22' },
+            { name: 'Fuchsia', hex: '#ff00ff' },
+            { name: 'Gainsboro', hex: '#dcdcdc' },
+            { name: 'Ghost White', hex: '#f8f8ff' },
+            { name: 'Goldenrod', hex: '#daa520' },
+            { name: 'Honeydew', hex: '#f0fff0' },
+            { name: 'Ivory', hex: '#fffff0' },
+            { name: 'Lavender', hex: '#e6e6fa' },
+            { name: 'Lavender Blush', hex: '#fff0f5' },
+            { name: 'Lawn Green', hex: '#7cfc00' },
+            { name: 'Lemon Chiffon', hex: '#fffacd' },
+            { name: 'Light Blue', hex: '#add8e6' },
+            { name: 'Light Coral', hex: '#f08080' },
+            { name: 'Light Cyan', hex: '#e0ffff' },
+            { name: 'Light Goldenrod', hex: '#fafad2' },
+            { name: 'Light Gray', hex: '#d3d3d3' },
+            { name: 'Light Green', hex: '#90ee90' },
+            { name: 'Light Pink', hex: '#ffb6c1' },
+            { name: 'Light Salmon', hex: '#ffa07a' },
+            { name: 'Light Sea Green', hex: '#20b2aa' },
+            { name: 'Light Sky Blue', hex: '#87cefa' },
+            { name: 'Light Slate Gray', hex: '#778899' },
+            { name: 'Light Steel Blue', hex: '#b0c4de' },
+            { name: 'Light Yellow', hex: '#ffffe0' },
+            { name: 'Lime Green', hex: '#32cd32' },
+            { name: 'Medium Aquamarine', hex: '#66cdaa' },
+            { name: 'Medium Orchid', hex: '#ba55d3' },
+            { name: 'Medium Sea Green', hex: '#3cb371' },
+            { name: 'Medium Slate Blue', hex: '#7b68ee' },
+            { name: 'Medium Spring Green', hex: '#00fa9a' },
+            { name: 'Medium Turquoise', hex: '#48d1cc' },
+            { name: 'Medium Violet Red', hex: '#c71585' },
+            { name: 'Midnight Blue', hex: '#191970' },
+            { name: 'Mint Cream', hex: '#f5fffa' },
+            { name: 'Misty Rose', hex: '#ffe4e1' },
+            { name: 'Moccasin', hex: '#ffe4b5' },
+            { name: 'Navajo White', hex: '#ffdead' },
+            { name: 'Old Lace', hex: '#fdf5e6' },
+            { name: 'Olive Drab', hex: '#6b8e23' },
+            { name: 'Orange Red', hex: '#ff4500' },
+            { name: 'Pale Goldenrod', hex: '#eee8aa' },
+            { name: 'Pale Green', hex: '#98fb98' },
+            { name: 'Pale Turquoise', hex: '#afeeee' },
+            { name: 'Pale Violet Red', hex: '#db7093' },
+            { name: 'Papaya Whip', hex: '#ffefd5' },
+            { name: 'Peach Puff', hex: '#ffdab9' },
+            { name: 'Peru', hex: '#cd853f' },
+            { name: 'Powder Blue', hex: '#b0e0e6' },
+            { name: 'Rosy Brown', hex: '#bc8f8f' },
+            { name: 'Saddle Brown', hex: '#8b4513' },
+            { name: 'Sea Green', hex: '#2e8b57' },
+            { name: 'Sienna', hex: '#a0522d' },
+            { name: 'Slate Blue', hex: '#6a5acd' },
+            { name: 'Slate Gray', hex: '#708090' },
+            { name: 'Snow', hex: '#fffafa' },
+            { name: 'Spring Green', hex: '#00ff7f' },
+            { name: 'Steel Blue', hex: '#4682b4' },
+            { name: 'Tan', hex: '#d2b48c' },
+            { name: 'Thistle', hex: '#d8bfd8' },
+            { name: 'Wheat', hex: '#f5deb3' },
+            { name: 'Yellow Green', hex: '#9acd32' }
+        ];
+
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            }
+            const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function colorDistance(c1, c2) {
+            const dr = c1.r - c2.r;
+            const dg = c1.g - c2.g;
+            const db = c1.b - c2.b;
+            return Math.sqrt(dr*dr + dg*dg + db*db);
+        }
+
+        function findClosestColor(hex) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return null;
+            
+            let closest = null;
+            let minDistance = Infinity;
+            
+            colorDatabase.forEach(color => {
+                const colorRgb = hexToRgb(color.hex);
+                if (colorRgb) {
+                    const distance = colorDistance(rgb, colorRgb);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closest = color;
+                    }
+                }
+            });
+            
+            return closest;
+        }
+
+        function findColor() {
+            let hex = document.getElementById('hexInput').value.trim();
+            
+            // Auto-add # if missing
+            if (hex && !hex.startsWith('#')) {
+                hex = '#' + hex;
+            }
+            
+            // Handle shorthand hex
+            if (/^#([0-9a-fA-F]{3})$/.test(hex)) {
+                hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+            }
+            
+            // Validate hex
+            if (!/^#([0-9a-fA-F]{6})$/.test(hex)) {
+                document.getElementById('colorDisplay').style.background = '#1a1a2e';
+                document.getElementById('colorName').textContent = 'Invalid Color';
+                document.getElementById('colorHex').textContent = hex.toUpperCase();
+                document.getElementById('redValue').textContent = '--';
+                document.getElementById('greenValue').textContent = '--';
+                document.getElementById('blueValue').textContent = '--';
+                return;
+            }
+            
+            document.getElementById('hexInput').value = hex;
+            document.getElementById('colorPicker').value = hex;
+            
+            const closest = findClosestColor(hex);
+            const rgb = hexToRgb(hex);
+            
+            // Update display
+            document.getElementById('colorDisplay').style.background = hex;
+            
+            // Determine text color
+            const lum = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+            const textColor = lum > 0.5 ? '#000000' : '#ffffff';
+            document.getElementById('colorDisplay').style.color = textColor;
+            
+            document.getElementById('colorName').textContent = closest ? closest.name : 'Unknown';
+            document.getElementById('colorHex').textContent = hex.toUpperCase();
+            document.getElementById('redValue').textContent = rgb.r;
+            document.getElementById('greenValue').textContent = rgb.g;
+            document.getElementById('blueValue').textContent = rgb.b;
+            
+            // Show similar colors
+            showSimilarColors(hex);
+        }
+
+        function showSimilarColors(hex) {
+            const list = document.getElementById('colorList');
+            list.innerHTML = '';
+            
+            const rgb = hexToRgb(hex);
+            if (!rgb) return;
+            
+            // Sort colors by distance
+            const sorted = colorDatabase
+                .map(color => ({
+                    ...color,
+                    distance: colorDistance(rgb, hexToRgb(color.hex))
+                }))
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 20);
+            
+            sorted.forEach(color => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+                
+                const swatch = document.createElement('div');
+                swatch.className = 'swatch';
+                swatch.style.background = color.hex;
+                
+                const info = document.createElement('div');
+                info.className = 'color-info';
+                info.innerHTML = `
+                    <div class="name">${color.name}</div>
+                    <div class="hex">${color.hex.toUpperCase()}</div>
+                `;
+                
+                const rgbInfo = document.createElement('div');
+                rgbInfo.className = 'rgb-info';
+                const c = hexToRgb(color.hex);
+                rgbInfo.textContent = `RGB(${c.r}, ${c.g}, ${c.b})`;
+                
+                item.appendChild(swatch);
+                item.appendChild(info);
+                item.appendChild(rgbInfo);
+                
+                item.onclick = () => {
+                    document.getElementById('hexInput').value = color.hex;
+                    findColor();
+                };
+                
+                list.appendChild(item);
+            });
+        }
+
+        function updateFromPicker() {
+            const color = document.getElementById('colorPicker').value;
+            document.getElementById('hexInput').value = color;
+            findColor();
+        }
+
+        function copyName() {
+            const name = document.getElementById('colorName').textContent;
+            const hex = document.getElementById('colorHex').textContent;
+            const text = `${name} (${hex})`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied: ' + text);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Copied: ' + text);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Initial find
+        findColor();
+    </script>
+</body>
+</html>

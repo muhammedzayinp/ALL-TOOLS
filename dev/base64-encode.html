@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encode - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input[type="file"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .input-group input[type="file"]::-webkit-file-upload-button {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            padding: 6px 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow: auto;
+        }
+        .result-container pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+        }
+        .result-container .error {
+            color: #ef4444;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .result-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .file-info {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+        }
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .mode-toggle button {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        .mode-toggle button.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: #6366f1;
+            color: #fff;
+        }
+        .mode-toggle button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .mode-toggle button.active:hover {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔐</span>
+        <h1>Base64 Encode</h1>
+        <p class="desc">Encode text or files to Base64 format</p>
+        
+        <div class="mode-toggle">
+            <button class="active" id="textMode" onclick="switchMode('text')">📝 Text</button>
+            <button id="fileMode" onclick="switchMode('file')">📎 File</button>
+        </div>
+        
+        <div id="textInputArea">
+            <div class="input-group">
+                <label>Input Text</label>
+                <textarea id="textInput" placeholder="Enter text to encode...">Hello World!</textarea>
+            </div>
+        </div>
+        
+        <div id="fileInputArea" style="display:none;">
+            <div class="input-group">
+                <label>Select File</label>
+                <input type="file" id="fileInput" onchange="handleFile()">
+                <div class="file-info" id="fileInfo">No file selected</div>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="encodeBase64()">🔐 Encode</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="result-wrapper">
+            <div class="result-container" id="resultContainer">
+                <pre id="resultOutput"><span style="color: rgba(255,255,255,0.3);">Encoded Base64 will appear here...</span></pre>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentMode = 'text';
+        let fileData = null;
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('textMode').className = mode === 'text' ? 'active' : '';
+            document.getElementById('fileMode').className = mode === 'file' ? 'active' : '';
+            document.getElementById('textInputArea').style.display = mode === 'text' ? 'block' : 'none';
+            document.getElementById('fileInputArea').style.display = mode === 'file' ? 'block' : 'none';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Encoded Base64 will appear here...</span>';
+        }
+
+        function handleFile() {
+            const file = document.getElementById('fileInput').files[0];
+            if (file) {
+                document.getElementById('fileInfo').textContent = `📎 ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fileData = e.target.result;
+                    showToast('✅ File loaded successfully!');
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                document.getElementById('fileInfo').textContent = 'No file selected';
+                fileData = null;
+            }
+        }
+
+        function encodeBase64() {
+            try {
+                let encoded = '';
+                
+                if (currentMode === 'text') {
+                    const input = document.getElementById('textInput').value;
+                    if (!input) {
+                        showToast('⚠️ Please enter some text');
+                        return;
+                    }
+                    encoded = btoa(unescape(encodeURIComponent(input)));
+                } else {
+                    if (!fileData) {
+                        showToast('⚠️ Please select a file');
+                        return;
+                    }
+                    const bytes = new Uint8Array(fileData);
+                    let binary = '';
+                    for (let i = 0; i < bytes.length; i++) {
+                        binary += String.fromCharCode(bytes[i]);
+                    }
+                    encoded = btoa(binary);
+                }
+                
+                document.getElementById('resultOutput').innerHTML = encoded;
+                document.getElementById('resultOutput').className = '';
+                showToast('✅ Base64 encoded successfully!');
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Error encoding');
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').textContent = 'No file selected';
+            fileData = null;
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Encoded Base64 will appear here...</span>';
+            document.getElementById('resultOutput').className = '';
+            showToast('🗑️ Cleared');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultOutput').textContent;
+            if (!text || text.includes('will appear here') || text.includes('Error')) {
+                showToast('⚠️ Nothing to copy');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied to clipboard!');
+            }).catch(() => {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                const el = document.getElementById('resultOutput');
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('copy');
+                showToast('✅ Copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            // Sample text is already set
+            encodeBase64();
+        };
+    </script>
+</body>
+</html>

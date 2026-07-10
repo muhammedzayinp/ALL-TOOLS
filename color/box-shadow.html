@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Shadow Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
+            position: relative;
+        }
+        .shadow-box {
+            width: 160px;
+            height: 160px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group label span {
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 4px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+        }
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 36px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+        }
+        .control-group input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin: 12px 0 16px 0;
+        }
+        .preset-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.5);
+            position: relative;
+        }
+        .preset-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .preset-item .shadow-demo {
+            width: 60%;
+            height: 60%;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📦</span>
+        <h1>Box Shadow Generator</h1>
+        <p class="desc">Create beautiful box shadows with real-time preview</p>
+        
+        <div class="preview-container">
+            <div class="shadow-box" id="shadowBox">Hover</div>
+        </div>
+        
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Horizontal (X) <span id="xValue">10</span>px</label>
+                <input type="range" id="xOffset" min="-50" max="50" value="10" oninput="updateShadow()">
+            </div>
+            <div class="control-group">
+                <label>Vertical (Y) <span id="yValue">10</span>px</label>
+                <input type="range" id="yOffset" min="-50" max="50" value="10" oninput="updateShadow()">
+            </div>
+            <div class="control-group">
+                <label>Blur <span id="blurValue">20</span>px</label>
+                <input type="range" id="blur" min="0" max="80" value="20" oninput="updateShadow()">
+            </div>
+            <div class="control-group">
+                <label>Spread <span id="spreadValue">0</span>px</label>
+                <input type="range" id="spread" min="-20" max="40" value="0" oninput="updateShadow()">
+            </div>
+            <div class="control-group full-width">
+                <label>Shadow Color</label>
+                <input type="color" id="shadowColor" value="#000000" onchange="updateShadow()">
+                <input type="text" id="shadowColorText" value="#000000" oninput="updateFromText()">
+            </div>
+        </div>
+        
+        <div class="preset-grid" id="presetGrid"></div>
+        
+        <button class="btn" onclick="randomShadow()">🎲 Random Shadow</button>
+        <button class="btn-secondary" onclick="copyShadow()">📋 Copy CSS Code</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const presets = [
+            { x: 0, y: 10, blur: 20, spread: 0, color: '#000000', name: 'Soft' },
+            { x: 0, y: 20, blur: 40, spread: 0, color: '#000000', name: 'Deep' },
+            { x: 10, y: 10, blur: 20, spread: 0, color: '#000000', name: 'Default' },
+            { x: 0, y: 4, blur: 10, spread: 0, color: '#000000', name: 'Subtle' },
+            { x: 20, y: 20, blur: 30, spread: -5, color: '#000000', name: 'Dramatic' },
+            { x: 0, y: 0, blur: 30, spread: 0, color: '#6366f1', name: 'Glow' },
+            { x: 0, y: 30, blur: 40, spread: -10, color: '#000000', name: 'Elevated' },
+            { x: 10, y: 10, blur: 0, spread: 5, color: '#000000', name: 'Sharp' }
+        ];
+
+        function updateShadow() {
+            const x = document.getElementById('xOffset').value;
+            const y = document.getElementById('yOffset').value;
+            const blur = document.getElementById('blur').value;
+            const spread = document.getElementById('spread').value;
+            const color = document.getElementById('shadowColor').value;
+            
+            document.getElementById('xValue').textContent = x;
+            document.getElementById('yValue').textContent = y;
+            document.getElementById('blurValue').textContent = blur;
+            document.getElementById('spreadValue').textContent = spread;
+            document.getElementById('shadowColorText').value = color;
+            
+            const shadow = `${x}px ${y}px ${blur}px ${spread}px ${color}`;
+            document.getElementById('shadowBox').style.boxShadow = shadow;
+        }
+
+        function updateFromText() {
+            const color = document.getElementById('shadowColorText').value;
+            if (/^#([0-9a-fA-F]{6})$/.test(color)) {
+                document.getElementById('shadowColor').value = color;
+                updateShadow();
+            }
+        }
+
+        function randomShadow() {
+            document.getElementById('xOffset').value = Math.floor(Math.random() * 60 - 30);
+            document.getElementById('yOffset').value = Math.floor(Math.random() * 60 - 30);
+            document.getElementById('blur').value = Math.floor(Math.random() * 60 + 5);
+            document.getElementById('spread').value = Math.floor(Math.random() * 40 - 15);
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('shadowColor').value = randomColor;
+            updateShadow();
+        }
+
+        function copyShadow() {
+            const x = document.getElementById('xOffset').value;
+            const y = document.getElementById('yOffset').value;
+            const blur = document.getElementById('blur').value;
+            const spread = document.getElementById('spread').value;
+            const color = document.getElementById('shadowColor').value;
+            
+            const shadow = `box-shadow: ${x}px ${y}px ${blur}px ${spread}px ${color};`;
+            
+            navigator.clipboard.writeText(shadow).then(() => {
+                showToast('✅ CSS copied: ' + shadow);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = shadow;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ CSS copied: ' + shadow);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function initPresets() {
+            const grid = document.getElementById('presetGrid');
+            presets.forEach(preset => {
+                const item = document.createElement('div');
+                item.className = 'preset-item';
+                
+                const shadow = `${preset.x}px ${preset.y}px ${preset.blur}px ${preset.spread}px ${preset.color}`;
+                item.style.boxShadow = shadow;
+                
+                const demo = document.createElement('div');
+                demo.className = 'shadow-demo';
+                item.appendChild(demo);
+                
+                item.title = preset.name;
+                item.onclick = () => {
+                    document.getElementById('xOffset').value = preset.x;
+                    document.getElementById('yOffset').value = preset.y;
+                    document.getElementById('blur').value = preset.blur;
+                    document.getElementById('spread').value = preset.spread;
+                    document.getElementById('shadowColor').value = preset.color;
+                    updateShadow();
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        // Initialize
+        initPresets();
+        updateShadow();
+    </script>
+</body>
+</html>

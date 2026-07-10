@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Time - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .time-display {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            margin: 16px 0;
+        }
+        .time-display .main-time {
+            font-size: 4.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+        }
+        .time-display .date-display {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 8px;
+        }
+        .time-display .timezone-display {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .time-display .seconds-display {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .format-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .format-btn {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .format-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .format-btn.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+            color: #fff;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🕐</span>
+        <h1>Current Time</h1>
+        <p class="desc">Display current time in different formats and timezones</p>
+        
+        <div class="time-display" id="timeDisplay">
+            <div class="main-time" id="mainTime">00:00:00</div>
+            <div class="date-display" id="dateDisplay">January 1, 2024</div>
+            <div class="timezone-display" id="timezoneDisplay">UTC+00:00</div>
+            <div class="seconds-display" id="secondsDisplay">Seconds: 00</div>
+        </div>
+        
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Time Format</label>
+                <select id="timeFormat" onchange="updateTime()">
+                    <option value="12">12-Hour (AM/PM)</option>
+                    <option value="24" selected>24-Hour</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Timezone</label>
+                <select id="timezone" onchange="updateTime()">
+                    <option value="local">Local Time</option>
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">New York (EST)</option>
+                    <option value="America/Chicago">Chicago (CST)</option>
+                    <option value="America/Denver">Denver (MST)</option>
+                    <option value="America/Los_Angeles">Los Angeles (PST)</option>
+                    <option value="Europe/London">London (GMT)</option>
+                    <option value="Europe/Paris">Paris (CET)</option>
+                    <option value="Asia/Dubai">Dubai (GST)</option>
+                    <option value="Asia/Tokyo">Tokyo (JST)</option>
+                    <option value="Asia/Singapore">Singapore (SGT)</option>
+                    <option value="Australia/Sydney">Sydney (AEST)</option>
+                    <option value="Pacific/Auckland">Auckland (NZST)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="format-buttons" id="formatButtons">
+            <button class="format-btn active" data-format="default" onclick="setFormat('default')">Default</button>
+            <button class="format-btn" data-format="compact" onclick="setFormat('compact')">Compact</button>
+            <button class="format-btn" data-format="long" onclick="setFormat('long')">Long</button>
+            <button class="format-btn" data-format="iso" onclick="setFormat('iso')">ISO</button>
+        </div>
+        
+        <button class="btn-secondary" onclick="copyTime()">📋 Copy Current Time</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentFormat = 'default';
+        let timerInterval;
+
+        function updateTime() {
+            const format = document.getElementById('timeFormat').value;
+            const timezone = document.getElementById('timezone').value;
+            
+            let now;
+            if (timezone === 'local') {
+                now = new Date();
+            } else if (timezone === 'UTC') {
+                now = new Date();
+                now = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+            } else {
+                // For other timezones, use Intl.DateTimeFormat
+                now = new Date();
+            }
+            
+            // Get timezone offset for display
+            const offset = now.getTimezoneOffset();
+            const offsetHours = Math.abs(Math.floor(offset / 60));
+            const offsetMinutes = Math.abs(offset % 60);
+            const offsetSign = offset <= 0 ? '+' : '-';
+            const offsetStr = `UTC${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+            
+            // Format time based on selection
+            let hours, minutes, seconds, ampm = '';
+            let timeStr;
+            
+            if (format === '12') {
+                hours = now.getHours() % 12 || 12;
+                ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+            } else {
+                hours = String(now.getHours()).padStart(2, '0');
+            }
+            
+            minutes = String(now.getMinutes()).padStart(2, '0');
+            seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // Apply format style
+            let mainTime;
+            if (currentFormat === 'default') {
+                mainTime = format === '12' ? `${hours}:${minutes}:${seconds} ${ampm}` : `${hours}:${minutes}:${seconds}`;
+            } else if (currentFormat === 'compact') {
+                mainTime = format === '12' ? `${hours}:${minutes} ${ampm}` : `${hours}:${minutes}`;
+            } else if (currentFormat === 'long') {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                mainTime = now.toLocaleString('en-US', options);
+            } else if (currentFormat === 'iso') {
+                mainTime = now.toISOString();
+            }
+            
+            // Date
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('en-US', dateOptions);
+            
+            // Update display
+            document.getElementById('mainTime').textContent = mainTime;
+            document.getElementById('dateDisplay').textContent = dateStr;
+            document.getElementById('timezoneDisplay').textContent = timezone === 'local' ? `Local (${offsetStr})` : timezone;
+            document.getElementById('secondsDisplay').textContent = `Seconds: ${seconds}`;
+        }
+
+        function setFormat(format) {
+            currentFormat = format;
+            
+            // Update active button
+            document.querySelectorAll('.format-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.format === format) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            updateTime();
+        }
+
+        function copyTime() {
+            const time = document.getElementById('mainTime').textContent;
+            const date = document.getElementById('dateDisplay').textContent;
+            const text = `${date} - ${time}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Current time copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Current time copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Start the timer
+        function startTimer() {
+            updateTime();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTime, 1000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            startTimer();
+        };
+    </script>
+</body>
+</html>

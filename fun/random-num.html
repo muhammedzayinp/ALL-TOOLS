@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .number-display {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            margin: 16px 0;
+        }
+        .number-display .number {
+            font-size: 6rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+        .number-display .number.animate {
+            animation: pop 0.3s ease;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .number-display .label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+        }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .btn {
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            min-height: 50px;
+        }
+        .history-item {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .history-empty {
+            color: rgba(255,255,255,0.2);
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎲</span>
+        <h1>Random Number Generator</h1>
+        <p class="desc">Generate random numbers between any range</p>
+        
+        <div class="number-display">
+            <div class="number" id="randomNumber">42</div>
+            <div class="label">Click Generate to get a random number</div>
+        </div>
+        
+        <div class="controls">
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Min</label>
+                <input type="number" id="minInput" value="1">
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Max</label>
+                <input type="number" id="maxInput" value="100">
+            </div>
+        </div>
+        
+        <div style="display:flex;gap:12px;margin:12px 0;">
+            <button class="btn" onclick="generateNumber()">🎲 Generate</button>
+            <button class="btn-secondary" onclick="clearHistory()">🗑️ Clear</button>
+        </div>
+        
+        <div class="history-grid" id="historyGrid">
+            <span class="history-empty">No numbers generated yet</span>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let history = [];
+
+        function generateNumber() {
+            const min = parseInt(document.getElementById('minInput').value) || 0;
+            const max = parseInt(document.getElementById('maxInput').value) || 100;
+            
+            if (min > max) {
+                showToast('⚠️ Min must be less than or equal to Max');
+                return;
+            }
+            
+            const random = Math.floor(Math.random() * (max - min + 1)) + min;
+            
+            // Animate
+            const display = document.getElementById('randomNumber');
+            display.textContent = random;
+            display.classList.remove('animate');
+            setTimeout(() => display.classList.add('animate'), 10);
+            
+            // Add to history
+            history.push(random);
+            if (history.length > 20) history.shift();
+            renderHistory();
+            
+            showToast(`🎲 Generated: ${random}`);
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            
+            if (history.length === 0) {
+                grid.innerHTML = '<span class="history-empty">No numbers generated yet</span>';
+                return;
+            }
+            
+            // Show most recent first
+            const reversed = [...history].reverse();
+            reversed.forEach(num => {
+                const item = document.createElement('span');
+                item.className = 'history-item';
+                item.textContent = num;
+                grid.appendChild(item);
+            });
+        }
+
+        function clearHistory() {
+            history = [];
+            renderHistory();
+            showToast('🗑️ History cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Generate on Enter key
+        document.getElementById('minInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generateNumber();
+        });
+        document.getElementById('maxInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generateNumber();
+        });
+
+        // Initial generation
+        window.onload = function() {
+            setTimeout(generateNumber, 100);
+        };
+    </script>
+</body>
+</html>

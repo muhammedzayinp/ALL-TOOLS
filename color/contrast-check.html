@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrast Checker - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .contrast-preview {
+            width: 100%;
+            height: 180px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+            background: #ffffff;
+            color: #000000;
+            transition: all 0.3s ease;
+        }
+        .contrast-preview .sample-text {
+            background: rgba(0,0,0,0.05);
+            padding: 12px 24px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .color-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .color-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .color-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .color-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .color-group input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+        }
+        .color-group input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .result-item .value.pass { color: #10b981; }
+        .result-item .value.fail { color: #ef4444; }
+        .result-item .value.warning { color: #f59e0b; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+        .status-badge.pass { 
+            background: rgba(16, 185, 129, 0.2); 
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .status-badge.fail { 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .status-badge.aa { 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #f59e0b;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .swap-icon {
+            text-align: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 1.2rem;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .swap-icon:hover {
+            color: rgba(255,255,255,0.5);
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">👁️</span>
+        <h1>Contrast Checker</h1>
+        <p class="desc">Check color contrast for accessibility compliance (WCAG 2.1)</p>
+        
+        <div class="contrast-preview" id="contrastPreview">
+            <span class="sample-text" id="sampleText">The quick brown fox jumps over the lazy dog</span>
+        </div>
+        
+        <div class="color-inputs">
+            <div class="color-group">
+                <label>Background Color</label>
+                <input type="color" id="bgColor" value="#ffffff" onchange="updateContrast()">
+                <input type="text" id="bgColorText" value="#ffffff" oninput="updateFromText()">
+            </div>
+            <div class="color-group">
+                <label>Text Color</label>
+                <input type="color" id="textColor" value="#000000" onchange="updateContrast()">
+                <input type="text" id="textColorText" value="#000000" oninput="updateFromText()">
+            </div>
+        </div>
+        
+        <div class="swap-icon" onclick="swapColors()">⇅ Swap Colors</div>
+        
+        <div class="result-grid">
+            <div class="result-item">
+                <div class="label">Contrast Ratio</div>
+                <div class="value" id="contrastRatio">21.00</div>
+            </div>
+            <div class="result-item">
+                <div class="label">AA (Normal)</div>
+                <div class="value" id="aaNormal">✓ Pass</div>
+            </div>
+            <div class="result-item">
+                <div class="label">AAA (Normal)</div>
+                <div class="value" id="aaaNormal">✓ Pass</div>
+            </div>
+        </div>
+        
+        <div style="text-align:center;margin-bottom:16px;">
+            <span class="status-badge pass" id="statusBadge">✅ WCAG AA Compliant</span>
+        </div>
+        
+        <button class="btn" onclick="randomColors()">🎲 Random Colors</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            }
+            const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function rgbToLuminance(r, g, b) {
+            const [rs, gs, bs] = [r, g, b].map(c => {
+                c = c / 255;
+                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+        }
+
+        function getContrastRatio(color1, color2) {
+            const rgb1 = hexToRgb(color1);
+            const rgb2 = hexToRgb(color2);
+            if (!rgb1 || !rgb2) return 0;
+            
+            const lum1 = rgbToLuminance(rgb1.r, rgb1.g, rgb1.b);
+            const lum2 = rgbToLuminance(rgb2.r, rgb2.g, rgb2.b);
+            const lighter = Math.max(lum1, lum2);
+            const darker = Math.min(lum1, lum2);
+            return (lighter + 0.05) / (darker + 0.05);
+        }
+
+        function updateContrast() {
+            const bg = document.getElementById('bgColor').value;
+            const text = document.getElementById('textColor').value;
+            
+            document.getElementById('bgColorText').value = bg;
+            document.getElementById('textColorText').value = text;
+            
+            // Update preview
+            document.getElementById('contrastPreview').style.background = bg;
+            document.getElementById('contrastPreview').style.color = text;
+            
+            const ratio = getContrastRatio(bg, text);
+            document.getElementById('contrastRatio').textContent = ratio.toFixed(2);
+            
+            // WCAG checks
+            const aaNormal = ratio >= 4.5;
+            const aaLarge = ratio >= 3.0;
+            const aaaNormal = ratio >= 7.0;
+            const aaaLarge = ratio >= 4.5;
+            
+            // Update status badges
+            const aaNormalEl = document.getElementById('aaNormal');
+            const aaaNormalEl = document.getElementById('aaaNormal');
+            const statusBadge = document.getElementById('statusBadge');
+            
+            aaNormalEl.textContent = aaNormal ? '✓ Pass' : '✗ Fail';
+            aaNormalEl.className = 'value ' + (aaNormal ? 'pass' : 'fail');
+            
+            aaaNormalEl.textContent = aaaNormal ? '✓ Pass' : '✗ Fail';
+            aaaNormalEl.className = 'value ' + (aaaNormal ? 'pass' : 'fail');
+            
+            // Overall status
+            if (aaNormal && aaaNormal) {
+                statusBadge.textContent = '✅ AAA Compliant (Best)';
+                statusBadge.className = 'status-badge pass';
+            } else if (aaNormal) {
+                statusBadge.textContent = '✅ AA Compliant (Good)';
+                statusBadge.className = 'status-badge aa';
+            } else {
+                statusBadge.textContent = '❌ Not Compliant (Needs Improvement)';
+                statusBadge.className = 'status-badge fail';
+            }
+        }
+
+        function updateFromText() {
+            const bg = document.getElementById('bgColorText').value;
+            const text = document.getElementById('textColorText').value;
+            
+            if (/^#([0-9a-fA-F]{6})$/.test(bg)) {
+                document.getElementById('bgColor').value = bg;
+            }
+            if (/^#([0-9a-fA-F]{6})$/.test(text)) {
+                document.getElementById('textColor').value = text;
+            }
+            updateContrast();
+        }
+
+        function swapColors() {
+            const bg = document.getElementById('bgColor').value;
+            const text = document.getElementById('textColor').value;
+            document.getElementById('bgColor').value = text;
+            document.getElementById('textColor').value = bg;
+            updateContrast();
+        }
+
+        function randomColors() {
+            const randomHex = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('bgColor').value = randomHex();
+            document.getElementById('textColor').value = randomHex();
+            updateContrast();
+        }
+
+        // Initial update
+        updateContrast();
+    </script>
+</body>
+</html>

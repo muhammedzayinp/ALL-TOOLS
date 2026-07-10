@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortune Cookie - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .cookie-container {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            margin: 16px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .cookie-container:hover {
+            border-color: rgba(255,255,255,0.1);
+        }
+        .cookie-container .cookie-emoji {
+            font-size: 5rem;
+            transition: all 0.3s;
+        }
+        .cookie-container .cookie-emoji.shaking {
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        .cookie-container .fortune-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.9);
+            margin: 16px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+        }
+        .cookie-container .fortune-text .quote-mark {
+            font-size: 2rem;
+            color: rgba(99,102,241,0.3);
+            margin: 0 4px;
+        }
+        .cookie-container .fortune-number {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.15);
+            font-family: 'Courier New', monospace;
+            margin-top: 8px;
+        }
+        .cookie-container .click-hint {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.2);
+            margin-top: 8px;
+        }
+        
+        .lucky-numbers {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+        .lucky-number {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            min-height: 30px;
+            justify-content: center;
+        }
+        .history-item {
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 4px;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.2);
+            font-family: 'Courier New', monospace;
+        }
+        .history-empty {
+            color: rgba(255,255,255,0.15);
+            font-size: 0.7rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🥠</span>
+        <h1>Fortune Cookie</h1>
+        <p class="desc">Click the cookie to reveal your fortune</p>
+        
+        <div class="cookie-container" id="cookieContainer" onclick="openFortune()">
+            <div class="cookie-emoji" id="cookieEmoji">🥠</div>
+            <div class="fortune-text" id="fortuneText">
+                <span class="quote-mark">"</span>
+                <span id="fortuneMessage">Click the cookie for your fortune</span>
+                <span class="quote-mark">"</span>
+            </div>
+            <div class="lucky-numbers" id="luckyNumbers">
+                <span class="lucky-number">🍀</span>
+            </div>
+            <div class="fortune-number" id="fortuneNumber">#0000</div>
+            <div class="click-hint">Click the cookie to crack it open</div>
+        </div>
+        
+        <button class="btn" onclick="openFortune()">🥠 Open Fortune</button>
+        <button class="btn-secondary" onclick="copyFortune()">📋 Copy Fortune</button>
+        
+        <div class="history-grid" id="historyGrid">
+            <span class="history-empty">No fortunes yet</span>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const fortunes = [
+            { text: "A beautiful, smart, and loving person will be coming into your life.", type: "love" },
+            { text: "A faithful friend is a strong defense.", type: "friendship" },
+            { text: "A fresh start will put you on your way.", type: "new beginnings" },
+            { text: "A golden egg of opportunity falls into your lap this month.", type: "opportunity" },
+            { text: "A lifetime of happiness lies ahead of you.", type: "happiness" },
+            { text: "A person is never too old to learn.", type: "wisdom" },
+            { text: "A short stranger will soon change your life.", type: "change" },
+            { text: "Adventure can be real happiness.", type: "adventure" },
+            { text: "All will go well with your new project.", type: "success" },
+            { text: "An unexpected relationship will bring you joy.", type: "love" },
+            { text: "Believe in yourself and others will too.", type: "confidence" },
+            { text: "Better to be alone than in bad company.", type: "wisdom" },
+            { text: "Change is happening in your life, go with the flow.", type: "change" },
+            { text: "Compassion will guide you to your purpose.", type: "compassion" },
+            { text: "Creativity is the key to your next success.", type: "creativity" },
+            { text: "Do not fear change, embrace it.", type: "change" },
+            { text: "Do not let small minds convince you that your dreams are too big.", type: "dreams" },
+            { text: "Enjoy the ride, even when the road is bumpy.", type: "life" },
+            { text: "Every day is a new opportunity to be better.", type: "growth" },
+            { text: "Every ending is a new beginning.", type: "new beginnings" },
+            { text: "Follow your heart, it knows the way.", type: "heart" },
+            { text: "Good things are coming your way.", type: "good news" },
+            { text: "Happiness is not something ready made. It comes from your own actions.", type: "happiness" },
+            { text: "Have the courage to live a life true to yourself.", type: "courage" },
+            { text: "If you want something you've never had, you must be willing to do something you've never done.", type: "growth" },
+            { text: "In the middle of difficulty lies opportunity.", type: "opportunity" },
+            { text: "It is never too late to be what you might have been.", type: "dreams" },
+            { text: "Keep your face to the sunshine and you cannot see a shadow.", type: "positivity" },
+            { text: "Kindness is the language which the deaf can hear and the blind can see.", type: "kindness" },
+            { text: "Let your heart guide you. It whispers, so listen closely.", type: "heart" },
+            { text: "Life is about the journey, not the destination.", type: "life" },
+            { text: "Love is the bridge between you and everything else.", type: "love" },
+            { text: "Luck is what happens when preparation meets opportunity.", type: "luck" },
+            { text: "Opportunities don't happen, you create them.", type: "opportunity" },
+            { text: "Patience is not simply the ability to wait - it's how we behave while we're waiting.", type: "patience" },
+            { text: "Stay true to your path, even when it gets lonely.", type: "perseverance" },
+            { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", type: "success" },
+            { text: "Take time to enjoy the simple things in life.", type: "appreciation" },
+            { text: "The best time to plant a tree was 20 years ago. The second best time is now.", type: "action" },
+            { text: "The only way to do great work is to love what you do.", type: "passion" },
+            { text: "The secret of getting ahead is getting started.", type: "action" },
+            { text: "There are no shortcuts to any place worth going.", type: "perseverance" },
+            { text: "Those who dare to fail miserably can achieve greatly.", type: "courage" },
+            { text: "Trust the timing of your life.", type: "trust" },
+            { text: "What you seek is seeking you.", type: "mystery" },
+            { text: "You are enough just as you are.", type: "self worth" },
+            { text: "You are never too old to set another goal or to dream a new dream.", type: "dreams" },
+            { text: "You cannot control what happens to you, but you can control your attitude toward what happens to you.", type: "mindset" },
+            { text: "You will soon receive a wonderful surprise.", type: "surprise" },
+            { text: "Your ability to adapt will lead you to success.", type: "adaptability" },
+            { text: "Your creativity will lead you to unexpected opportunities.", type: "creativity" },
+            { text: "Your enthusiasm will attract others to your cause.", type: "leadership" },
+            { text: "Your future is as bright as your faith in it.", type: "faith" },
+            { text: "Your heart is full of love. Share it generously.", type: "love" },
+            { text: "Your life is a reflection of your thoughts. Think positive.", type: "positivity" },
+            { text: "Your patience will be rewarded soon.", type: "patience" },
+            { text: "Your smile will brighten someone's day today.", type: "kindness" },
+            { text: "Your spirit is unbreakable. Keep going.", type: "strength" },
+            { text: "Your words have power. Use them wisely.", type: "wisdom" },
+            { text: "You will find what you're looking for when you least expect it.", type: "serendipity" }
+        ];
+
+        let history = [];
+        let currentFortune = null;
+
+        function openFortune() {
+            // Random fortune
+            const random = fortunes[Math.floor(Math.random() * fortunes.length)];
+            currentFortune = random;
+            
+            // Generate lucky numbers
+            const luckyNums = [];
+            for (let i = 0; i < 6; i++) {
+                luckyNums.push(Math.floor(Math.random() * 99) + 1);
+            }
+            
+            // Update display
+            const cookieEmoji = document.getElementById('cookieEmoji');
+            cookieEmoji.textContent = '🥠';
+            cookieEmoji.classList.remove('shaking');
+            setTimeout(() => cookieEmoji.classList.add('shaking'), 10);
+            
+            document.getElementById('fortuneMessage').textContent = random.text;
+            
+            const luckyContainer = document.getElementById('luckyNumbers');
+            luckyContainer.innerHTML = '';
+            luckyNums.forEach(num => {
+                const span = document.createElement('span');
+                span.className = 'lucky-number';
+                span.textContent = num;
+                luckyContainer.appendChild(span);
+            });
+            
+            const fortuneNum = Math.floor(Math.random() * 9999) + 1;
+            document.getElementById('fortuneNumber').textContent = `#${String(fortuneNum).padStart(4, '0')}`;
+            
+            // Add to history
+            history.push(random.text.substring(0, 30) + (random.text.length > 30 ? '...' : ''));
+            if (history.length > 10) history.shift();
+            renderHistory();
+            
+            showToast('🥠 Your fortune has been revealed!');
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            
+            if (history.length === 0) {
+                grid.innerHTML = '<span class="history-empty">No fortunes yet</span>';
+                return;
+            }
+            
+            history.forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'history-item';
+                span.textContent = item;
+                grid.appendChild(span);
+            });
+        }
+
+        function copyFortune() {
+            if (!currentFortune) {
+                showToast('⚠️ Open a fortune cookie first!');
+                return;
+            }
+            
+            const text = `"${currentFortune.text}" — 🥠 Fortune Cookie`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Fortune copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Fortune copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === ' ' || e.key === 'Space' || e.key === 'Enter') {
+                e.preventDefault();
+                openFortune();
+            }
+        });
+
+        // Initialize with a fortune
+        window.onload = function() {
+            openFortune();
+        };
+    </script>
+</body>
+</html>

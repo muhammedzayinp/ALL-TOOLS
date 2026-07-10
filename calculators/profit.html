@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .input-group input:focus { outline: none; border-color: #6366f1; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.3); }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+        }
+        .result.show { display: block; }
+        .result .big { font-size: 2rem; font-weight: 700; }
+        .result .sub { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 4px; }
+        .result .details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .result .details .item { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; }
+        .result .details .item .label { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+        .result .details .item .value { font-size: 1rem; font-weight: 600; color: #a78bfa; }
+        .back { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .back:hover { color: #fff; }
+        .profit { color: #10b981; }
+        .loss { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📈</span>
+        <h1>Profit Calculator</h1>
+        <p class="desc">Calculate profit, loss, and margin</p>
+        
+        <div class="input-group">
+            <label>Cost Price ($)</label>
+            <input type="number" id="cost" placeholder="e.g. 100" step="0.01">
+        </div>
+        <div class="input-group">
+            <label>Selling Price ($)</label>
+            <input type="number" id="selling" placeholder="e.g. 150" step="0.01">
+        </div>
+        <div class="input-group">
+            <label>Quantity Sold</label>
+            <input type="number" id="quantity" placeholder="e.g. 10" value="1" min="1">
+        </div>
+        
+        <button class="btn" onclick="calculateProfit()">Calculate Profit</button>
+        
+        <div class="result" id="result">
+            <div class="big" id="resultBig">$0.00</div>
+            <div class="sub" id="resultSub">Profit / Loss</div>
+            <div class="details">
+                <div class="item"><div class="label">Margin %</div><div class="value" id="margin">0%</div></div>
+                <div class="item"><div class="label">Total</div><div class="value" id="total">$0</div></div>
+            </div>
+        </div>
+        
+        <a href="file://fileserver/private/All%20Tools/index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function calculateProfit() {
+            const cost = parseFloat(document.getElementById('cost').value);
+            const selling = parseFloat(document.getElementById('selling').value);
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            
+            if (!cost || cost < 0 || !selling || selling < 0) {
+                alert('Please enter valid prices');
+                return;
+            }
+            
+            const totalCost = cost * quantity;
+            const totalSelling = selling * quantity;
+            const profit = totalSelling - totalCost;
+            const margin = (profit / totalSelling) * 100;
+            
+            const resultDiv = document.getElementById('result');
+            const bigEl = document.getElementById('resultBig');
+            const subEl = document.getElementById('resultSub');
+            
+            if (profit > 0) {
+                bigEl.className = 'big profit';
+                bigEl.textContent = `+$${profit.toFixed(2)}`;
+                subEl.textContent = `Profit of $${(profit/quantity).toFixed(2)} per unit`;
+            } else if (profit < 0) {
+                bigEl.className = 'big loss';
+                bigEl.textContent = `-$${Math.abs(profit).toFixed(2)}`;
+                subEl.textContent = `Loss of $${(Math.abs(profit)/quantity).toFixed(2)} per unit`;
+            } else {
+                bigEl.className = 'big';
+                bigEl.textContent = '$0.00';
+                subEl.textContent = 'No profit, no loss';
+            }
+            
+            document.getElementById('margin').textContent = margin.toFixed(1) + '%';
+            document.getElementById('total').textContent = `$${totalSelling.toFixed(2)}`;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') calculateProfit();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 750px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .palette-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.06);
+        }
+        .palette-color {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 100px;
+        }
+        .palette-color:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+        .palette-color .hex-text {
+            font-size: 0.7rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+        }
+        .palette-color .color-label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.6);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin: 12px 0 16px 0;
+        }
+        .preset-palette {
+            display: flex;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .preset-palette:hover {
+            transform: scale(1.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .preset-palette .mini-color {
+            flex: 1;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎨</span>
+        <h1>Palette Generator</h1>
+        <p class="desc">Generate beautiful color palettes with different schemes</p>
+        
+        <div class="palette-container" id="paletteContainer"></div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Base Color</label>
+                <input type="color" id="baseColor" value="#6366f1" onchange="generatePalette()">
+            </div>
+            <div class="control-group">
+                <label>Scheme Type</label>
+                <select id="schemeType" onchange="generatePalette()">
+                    <option value="monochromatic">Monochromatic</option>
+                    <option value="complementary" selected>Complementary</option>
+                    <option value="analogous">Analogous</option>
+                    <option value="triadic">Triadic</option>
+                    <option value="tetradic">Tetradic</option>
+                    <option value="square">Square</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="preset-grid" id="presetGrid"></div>
+        
+        <button class="btn" onclick="randomPalette()">🎲 Random Palette</button>
+        <button class="btn-secondary" onclick="copyPalette()">📋 Copy All Hex Codes</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const presets = [
+            ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
+            ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
+            ['#f472b6', '#ec4899', '#db2777', '#be185d', '#9d174d'],
+            ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'],
+            ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'],
+            ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe']
+        ];
+
+        function hexToHsl(hex) {
+            let r = parseInt(hex.slice(1,3), 16) / 255;
+            let g = parseInt(hex.slice(3,5), 16) / 255;
+            let b = parseInt(hex.slice(5,7), 16) / 255;
+            
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return { h: h * 360, s: s * 100, l: l * 100 };
+        }
+
+        function hslToHex(h, s, l) {
+            h /= 360;
+            s /= 100;
+            l /= 100;
+            
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        }
+
+        function generatePalette() {
+            const baseHex = document.getElementById('baseColor').value;
+            const scheme = document.getElementById('schemeType').value;
+            const hsl = hexToHsl(baseHex);
+            
+            let colors = [];
+            const count = 5;
+            
+            switch(scheme) {
+                case 'monochromatic':
+                    for (let i = 0; i < count; i++) {
+                        const l = Math.max(10, Math.min(90, hsl.l - 20 + i * 10));
+                        colors.push(hslToHex(hsl.h, hsl.s, l));
+                    }
+                    break;
+                case 'complementary':
+                    colors.push(baseHex);
+                    for (let i = 1; i < count; i++) {
+                        const h = (hsl.h + 180 + (i-1) * 20) % 360;
+                        colors.push(hslToHex(h, hsl.s, hsl.l));
+                    }
+                    break;
+                case 'analogous':
+                    for (let i = 0; i < count; i++) {
+                        const h = (hsl.h - 30 + i * 15) % 360;
+                        colors.push(hslToHex(h, hsl.s, hsl.l));
+                    }
+                    break;
+                case 'triadic':
+                    colors.push(baseHex);
+                    for (let i = 1; i < count; i++) {
+                        const h = (hsl.h + i * 120) % 360;
+                        colors.push(hslToHex(h, hsl.s, hsl.l));
+                    }
+                    break;
+                case 'tetradic':
+                    colors.push(baseHex);
+                    for (let i = 1; i < count; i++) {
+                        const h = (hsl.h + i * 90) % 360;
+                        colors.push(hslToHex(h, hsl.s, hsl.l));
+                    }
+                    break;
+                case 'square':
+                    colors.push(baseHex);
+                    for (let i = 1; i < count; i++) {
+                        const h = (hsl.h + i * 72) % 360;
+                        colors.push(hslToHex(h, hsl.s, hsl.l));
+                    }
+                    break;
+            }
+            
+            renderPalette(colors);
+        }
+
+        function renderPalette(colors) {
+            const container = document.getElementById('paletteContainer');
+            container.innerHTML = '';
+            
+            colors.forEach((hex, index) => {
+                const div = document.createElement('div');
+                div.className = 'palette-color';
+                div.style.background = hex;
+                
+                const textColor = getContrastColor(hex);
+                div.style.color = textColor;
+                
+                const hexText = document.createElement('span');
+                hexText.className = 'hex-text';
+                hexText.textContent = hex.toUpperCase();
+                hexText.style.color = textColor;
+                
+                const label = document.createElement('span');
+                label.className = 'color-label';
+                const names = ['Primary', 'Secondary', 'Tertiary', 'Quaternary', 'Quinary'];
+                label.textContent = names[index] || `Color ${index + 1}`;
+                label.style.color = textColor;
+                
+                div.appendChild(hexText);
+                div.appendChild(label);
+                
+                div.onclick = () => copyToClipboard(hex);
+                div.title = 'Click to copy hex code';
+                
+                container.appendChild(div);
+            });
+        }
+
+        function getContrastColor(hex) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return '#ffffff';
+            const lum = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+            return lum > 0.5 ? '#000000' : '#ffffff';
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function randomPalette() {
+            const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('baseColor').value = randomHex;
+            const schemes = ['monochromatic', 'complementary', 'analogous', 'triadic', 'tetradic', 'square'];
+            document.getElementById('schemeType').value = schemes[Math.floor(Math.random() * schemes.length)];
+            generatePalette();
+        }
+
+        function copyPalette() {
+            const colors = document.querySelectorAll('.palette-color .hex-text');
+            const hexCodes = Array.from(colors).map(el => el.textContent).join(' ');
+            copyToClipboard(hexCodes, '✅ Palette copied to clipboard!');
+        }
+
+        function copyToClipboard(text, message = '✅ Color copied!') {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(message);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast(message);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function initPresets() {
+            const grid = document.getElementById('presetGrid');
+            presets.forEach(palette => {
+                const div = document.createElement('div');
+                div.className = 'preset-palette';
+                palette.forEach(color => {
+                    const mini = document.createElement('div');
+                    mini.className = 'mini-color';
+                    mini.style.background = color;
+                    div.appendChild(mini);
+                });
+                div.onclick = () => {
+                    document.getElementById('baseColor').value = palette[0];
+                    generatePalette();
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        // Initialize
+        initPresets();
+        generatePalette();
+    </script>
+</body>
+</html>

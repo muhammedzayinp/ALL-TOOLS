@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Border Radius Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 250px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
+        }
+        .radius-box {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 20px;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group label span {
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 4px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+        }
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+        }
+        .control-group input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 8px;
+            margin: 12px 0 16px 0;
+        }
+        .preset-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .preset-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .preset-item .shape-demo {
+            width: 70%;
+            height: 70%;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔲</span>
+        <h1>Border Radius Generator</h1>
+        <p class="desc">Create custom border radius styles with real-time preview</p>
+        
+        <div class="preview-container">
+            <div class="radius-box" id="radiusBox">Hover</div>
+        </div>
+        
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Top-Left <span id="tlValue">20</span>px</label>
+                <input type="range" id="tl" min="0" max="100" value="20" oninput="updateRadius()">
+            </div>
+            <div class="control-group">
+                <label>Top-Right <span id="trValue">20</span>px</label>
+                <input type="range" id="tr" min="0" max="100" value="20" oninput="updateRadius()">
+            </div>
+            <div class="control-group">
+                <label>Bottom-Right <span id="brValue">20</span>px</label>
+                <input type="range" id="br" min="0" max="100" value="20" oninput="updateRadius()">
+            </div>
+            <div class="control-group">
+                <label>Bottom-Left <span id="blValue">20</span>px</label>
+                <input type="range" id="bl" min="0" max="100" value="20" oninput="updateRadius()">
+            </div>
+            <div class="control-group full-width">
+                <label>CSS Code</label>
+                <input type="text" id="cssCode" value="border-radius: 20px 20px 20px 20px;" readonly style="cursor:pointer;" onclick="copyRadius()">
+            </div>
+        </div>
+        
+        <div class="preset-grid" id="presetGrid"></div>
+        
+        <button class="btn" onclick="randomRadius()">🎲 Random Radius</button>
+        <button class="btn-secondary" onclick="copyRadius()">📋 Copy CSS Code</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const presets = [
+            { tl: 0, tr: 0, br: 0, bl: 0, name: 'Square' },
+            { tl: 10, tr: 10, br: 10, bl: 10, name: 'Soft' },
+            { tl: 20, tr: 20, br: 20, bl: 20, name: 'Rounded' },
+            { tl: 50, tr: 50, br: 50, bl: 50, name: 'Circle' },
+            { tl: 0, tr: 30, br: 30, bl: 0, name: 'Pill' },
+            { tl: 30, tr: 0, br: 0, bl: 30, name: 'Wave' },
+            { tl: 0, tr: 0, br: 50, bl: 50, name: 'Leaf' },
+            { tl: 50, tr: 0, br: 50, bl: 0, name: 'Diamond' }
+        ];
+
+        function updateRadius() {
+            const tl = document.getElementById('tl').value;
+            const tr = document.getElementById('tr').value;
+            const br = document.getElementById('br').value;
+            const bl = document.getElementById('bl').value;
+            
+            document.getElementById('tlValue').textContent = tl;
+            document.getElementById('trValue').textContent = tr;
+            document.getElementById('brValue').textContent = br;
+            document.getElementById('blValue').textContent = bl;
+            
+            const radius = `${tl}px ${tr}px ${br}px ${bl}px`;
+            document.getElementById('radiusBox').style.borderRadius = radius;
+            
+            // Update CSS code
+            const cssCode = `border-radius: ${radius};`;
+            document.getElementById('cssCode').value = cssCode;
+        }
+
+        function randomRadius() {
+            document.getElementById('tl').value = Math.floor(Math.random() * 100);
+            document.getElementById('tr').value = Math.floor(Math.random() * 100);
+            document.getElementById('br').value = Math.floor(Math.random() * 100);
+            document.getElementById('bl').value = Math.floor(Math.random() * 100);
+            updateRadius();
+        }
+
+        function copyRadius() {
+            const cssCode = document.getElementById('cssCode').value;
+            
+            navigator.clipboard.writeText(cssCode).then(() => {
+                showToast('✅ CSS copied: ' + cssCode);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = cssCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ CSS copied: ' + cssCode);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function initPresets() {
+            const grid = document.getElementById('presetGrid');
+            presets.forEach(preset => {
+                const item = document.createElement('div');
+                item.className = 'preset-item';
+                
+                const radius = `${preset.tl}px ${preset.tr}px ${preset.br}px ${preset.bl}px`;
+                item.style.borderRadius = radius;
+                
+                const demo = document.createElement('div');
+                demo.className = 'shape-demo';
+                demo.style.borderRadius = radius;
+                item.appendChild(demo);
+                
+                item.title = preset.name;
+                item.onclick = () => {
+                    document.getElementById('tl').value = preset.tl;
+                    document.getElementById('tr').value = preset.tr;
+                    document.getElementById('br').value = preset.br;
+                    document.getElementById('bl').value = preset.bl;
+                    updateRadius();
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        // Initialize
+        initPresets();
+        updateRadius();
+    </script>
+</body>
+</html>

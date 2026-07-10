@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Converter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        .result-detail {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 8px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .swap-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swap-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(180deg);
+        }
+        @media (max-width: 480px) {
+            .row-2col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🧊</span>
+        <h1>Volume Converter</h1>
+        <p class="desc">Convert between different volume units</p>
+        
+        <div class="row-2col">
+            <div class="input-group">
+                <label>From</label>
+                <select id="fromUnit" onchange="convert()">
+                    <option value="liter">Liter</option>
+                    <option value="milliliter">Milliliter</option>
+                    <option value="cubic_meter">Cubic Meter</option>
+                    <option value="cubic_centimeter">Cubic Centimeter</option>
+                    <option value="cubic_kilometer">Cubic Kilometer</option>
+                    <option value="gallon_us">Gallon (US)</option>
+                    <option value="gallon_uk">Gallon (UK)</option>
+                    <option value="quart_us">Quart (US)</option>
+                    <option value="quart_uk">Quart (UK)</option>
+                    <option value="pint_us">Pint (US)</option>
+                    <option value="pint_uk">Pint (UK)</option>
+                    <option value="cup_us">Cup (US)</option>
+                    <option value="fluid_ounce_us">Fluid Ounce (US)</option>
+                    <option value="fluid_ounce_uk">Fluid Ounce (UK)</option>
+                    <option value="tablespoon">Tablespoon</option>
+                    <option value="teaspoon">Teaspoon</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>To</label>
+                <select id="toUnit" onchange="convert()">
+                    <option value="liter">Liter</option>
+                    <option value="milliliter" selected>Milliliter</option>
+                    <option value="cubic_meter">Cubic Meter</option>
+                    <option value="cubic_centimeter">Cubic Centimeter</option>
+                    <option value="cubic_kilometer">Cubic Kilometer</option>
+                    <option value="gallon_us">Gallon (US)</option>
+                    <option value="gallon_uk">Gallon (UK)</option>
+                    <option value="quart_us">Quart (US)</option>
+                    <option value="quart_uk">Quart (UK)</option>
+                    <option value="pint_us">Pint (US)</option>
+                    <option value="pint_uk">Pint (UK)</option>
+                    <option value="cup_us">Cup (US)</option>
+                    <option value="fluid_ounce_us">Fluid Ounce (US)</option>
+                    <option value="fluid_ounce_uk">Fluid Ounce (UK)</option>
+                    <option value="tablespoon">Tablespoon</option>
+                    <option value="teaspoon">Teaspoon</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin: 8px 0;">
+            <button class="swap-btn" onclick="swapUnits()">⇄</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Value</label>
+            <input type="number" id="inputValue" value="1" step="any" oninput="convert()">
+        </div>
+        
+        <div class="result-container">
+            <div class="result-value" id="resultValue">1000.00</div>
+            <div class="result-label" id="resultLabel">milliliter</div>
+            <div class="result-detail" id="resultDetail">1 liter = 1000 milliliter</div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const conversions = {
+            liter: 1,
+            milliliter: 1000,
+            cubic_meter: 0.001,
+            cubic_centimeter: 1000,
+            cubic_kilometer: 1e-12,
+            gallon_us: 0.264172,
+            gallon_uk: 0.219969,
+            quart_us: 1.05669,
+            quart_uk: 0.879877,
+            pint_us: 2.11338,
+            pint_uk: 1.75975,
+            cup_us: 4.22675,
+            fluid_ounce_us: 33.814,
+            fluid_ounce_uk: 35.1951,
+            tablespoon: 67.628,
+            teaspoon: 202.884
+        };
+
+        const labels = {
+            liter: 'liter',
+            milliliter: 'milliliter',
+            cubic_meter: 'cubic meter',
+            cubic_centimeter: 'cubic centimeter',
+            cubic_kilometer: 'cubic kilometer',
+            gallon_us: 'gallon (US)',
+            gallon_uk: 'gallon (UK)',
+            quart_us: 'quart (US)',
+            quart_uk: 'quart (UK)',
+            pint_us: 'pint (US)',
+            pint_uk: 'pint (UK)',
+            cup_us: 'cup (US)',
+            fluid_ounce_us: 'fluid ounce (US)',
+            fluid_ounce_uk: 'fluid ounce (UK)',
+            tablespoon: 'tablespoon',
+            teaspoon: 'teaspoon'
+        };
+
+        function convert() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const value = parseFloat(document.getElementById('inputValue').value);
+            
+            if (isNaN(value) || value === '') {
+                document.getElementById('resultValue').textContent = '—';
+                document.getElementById('resultLabel').textContent = labels[toUnit];
+                document.getElementById('resultDetail').textContent = 'Please enter a valid number';
+                return;
+            }
+            
+            const fromFactor = conversions[fromUnit];
+            const toFactor = conversions[toUnit];
+            const result = (value / fromFactor) * toFactor;
+            
+            const formatted = result.toFixed(6).replace(/\.?0+$/, '');
+            document.getElementById('resultValue').textContent = formatted;
+            document.getElementById('resultLabel').textContent = labels[toUnit];
+            document.getElementById('resultDetail').textContent = 
+                `${value} ${labels[fromUnit]} = ${formatted} ${labels[toUnit]}`;
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('fromUnit');
+            const toSelect = document.getElementById('toUnit');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            convert();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            convert();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Intake Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #6366f1; }
+        .input-group select option { background: #1a1a2e; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.3); }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+        }
+        .result.show { display: block; }
+        .result .big { font-size: 2rem; font-weight: 700; color: #a78bfa; }
+        .result .sub { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 4px; }
+        .result .details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .result .details .item { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; }
+        .result .details .item .label { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+        .result .details .item .value { font-size: 1rem; font-weight: 600; color: #a78bfa; }
+        .back { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .back:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">💧</span>
+        <h1>Water Intake Calculator</h1>
+        <p class="desc">Calculate your daily water intake requirement</p>
+        
+        <div class="input-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" placeholder="e.g. 70" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>Activity Level</label>
+            <select id="activity">
+                <option value="1.2">Sedentary (Little exercise)</option>
+                <option value="1.375">Lightly Active (1-3 days/week)</option>
+                <option value="1.55">Moderately Active (3-5 days/week)</option>
+                <option value="1.725">Very Active (6-7 days/week)</option>
+                <option value="1.9">Extremely Active (Athlete)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Weather</label>
+            <select id="weather">
+                <option value="1">Normal</option>
+                <option value="1.2">Hot Weather</option>
+                <option value="1.3">Very Hot Weather</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="calculateWater()">Calculate Water Intake</button>
+        
+        <div class="result" id="result">
+            <div class="big" id="resultBig">0 L</div>
+            <div class="sub" id="resultSub">Daily water intake</div>
+            <div class="details">
+                <div class="item"><div class="label">Glasses (8oz)</div><div class="value" id="glasses">0</div></div>
+                <div class="item"><div class="label">Bottles (500ml)</div><div class="value" id="bottles">0</div></div>
+            </div>
+        </div>
+        
+        <a href="file://fileserver/private/All%20Tools/index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        function calculateWater() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+            const weather = parseFloat(document.getElementById('weather').value);
+            
+            if (!weight || weight <= 0) {
+                alert('Please enter a valid weight');
+                return;
+            }
+            
+            // Base: 30ml per kg, adjust for activity and weather
+            let water = weight * 30;
+            water *= activity;
+            water *= weather;
+            
+            const glasses = water / 240; // 8 oz = 240ml
+            const bottles = water / 500; // 500ml bottles
+            
+            document.getElementById('resultBig').textContent = `${Math.round(water)} ml (${(water/1000).toFixed(1)} L)`;
+            document.getElementById('resultSub').textContent = `For ${weight}kg body weight`;
+            document.getElementById('glasses').textContent = Math.round(glasses);
+            document.getElementById('bottles').textContent = Math.round(bottles);
+            document.getElementById('result').classList.add('show');
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') calculateWater();
+        });
+    </script>
+</body>
+</html>

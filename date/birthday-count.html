@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Countdown - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input[type="date"] {
+            color-scheme: dark;
+        }
+        .input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-item .value.small {
+            font-size: 1.1rem;
+        }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        .result-item .value.birthday {
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .birthday-message {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .birthday-message strong {
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎂</span>
+        <h1>Birthday Countdown</h1>
+        <p class="desc">Count down the days until your next birthday</p>
+        
+        <div class="input-group">
+            <label>Your Birthday</label>
+            <input type="date" id="birthdayInput">
+        </div>
+        
+        <button class="btn" onclick="calculateBirthday()">🎉 Calculate Countdown</button>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item">
+                <div class="label">Days Until Birthday</div>
+                <div class="value" id="daysCount">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Weeks</div>
+                <div class="value small" id="weeksCount">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Hours</div>
+                <div class="value small" id="hoursCount">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">You'll Be</div>
+                <div class="value birthday" id="ageDisplay">-</div>
+            </div>
+        </div>
+        
+        <div class="birthday-message" id="birthdayMessage">
+            Enter your birthday to start counting!
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calculateBirthday() {
+            const input = document.getElementById('birthdayInput').value;
+            if (!input) {
+                showToast('⚠️ Please select your birthday');
+                return;
+            }
+            
+            const [year, month, day] = input.split('-').map(Number);
+            const today = new Date();
+            
+            // Calculate next birthday
+            let nextBirthday = new Date(today.getFullYear(), month - 1, day);
+            if (nextBirthday < today) {
+                nextBirthday = new Date(today.getFullYear() + 1, month - 1, day);
+            }
+            
+            const diff = nextBirthday - today;
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(days / 7);
+            const remainingDays = days % 7;
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            // Calculate age
+            let age = nextBirthday.getFullYear() - year;
+            if (nextBirthday.getMonth() < month - 1 || 
+                (nextBirthday.getMonth() === month - 1 && nextBirthday.getDate() < day)) {
+                age--;
+            }
+            
+            // Update results
+            document.getElementById('daysCount').textContent = days;
+            document.getElementById('weeksCount').textContent = weeks > 0 ? `${weeks}w ${remainingDays}d` : 'Less than a week';
+            document.getElementById('hoursCount').textContent = hours;
+            document.getElementById('ageDisplay').textContent = `${age} years old! 🎉`;
+            
+            // Birthday message
+            const message = document.getElementById('birthdayMessage');
+            if (days === 0) {
+                message.innerHTML = '🎉 <strong>HAPPY BIRTHDAY!</strong> 🎉<br>Enjoy your special day!';
+                message.style.borderColor = 'rgba(236, 72, 153, 0.3)';
+                message.style.background = 'rgba(236, 72, 153, 0.05)';
+            } else if (days <= 7) {
+                message.innerHTML = `🎈 Only <strong>${days}</strong> days until your birthday! Get ready to celebrate!`;
+                message.style.borderColor = 'rgba(251, 191, 36, 0.3)';
+                message.style.background = 'rgba(251, 191, 36, 0.05)';
+            } else if (days <= 30) {
+                message.innerHTML = `📅 Your birthday is in <strong>${days}</strong> days!`;
+                message.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+                message.style.background = 'rgba(99, 102, 241, 0.05)';
+            } else {
+                message.innerHTML = `⏳ <strong>${days}</strong> days to go until you turn ${age}!`;
+                message.style.borderColor = 'rgba(255,255,255,0.06)';
+                message.style.background = 'rgba(255,255,255,0.02)';
+            }
+            
+            showToast('🎂 Birthday countdown updated!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Set default birthday to today
+        function setDefaultBirthday() {
+            const today = new Date();
+            const year = today.getFullYear() - 25; // Default to 25 years ago
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('birthdayInput').value = `${year}-${month}-${day}`;
+        }
+
+        // Auto-calculate on change
+        document.getElementById('birthdayInput').addEventListener('change', calculateBirthday);
+
+        // Initialize
+        setDefaultBirthday();
+        setTimeout(calculateBirthday, 100);
+    </script>
+</body>
+</html>

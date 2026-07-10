@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Fact Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .fact-container {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 16px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .fact-container .fact-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        .fact-container .fact-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+        }
+        .fact-container .fact-category {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .fact-container .fact-number {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.15);
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🧠</span>
+        <h1>Random Fact Generator</h1>
+        <p class="desc">Learn something new with random interesting facts</p>
+        
+        <div class="fact-container" id="factContainer">
+            <div class="fact-emoji" id="factEmoji">🌍</div>
+            <div class="fact-text" id="factText">Octopuses have three hearts. Two pump blood to the gills, and one pumps it to the rest of the body.</div>
+            <div class="fact-category" id="factCategory">🐙 Animals</div>
+            <div class="fact-number" id="factNumber">Fact #1</div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Category</label>
+                <select id="categoryFilter" onchange="generateFact()">
+                    <option value="all">All Categories</option>
+                    <option value="animals">Animals</option>
+                    <option value="science">Science</option>
+                    <option value="history">History</option>
+                    <option value="space">Space</option>
+                    <option value="human">Human Body</option>
+                    <option value="nature">Nature</option>
+                    <option value="technology">Technology</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Fact Count</label>
+                <select id="factCount" onchange="generateFact()">
+                    <option value="1">1 Fact</option>
+                    <option value="3">3 Facts</option>
+                    <option value="5">5 Facts</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="generateFact()">✨ New Fact</button>
+        <button class="btn-secondary" onclick="copyFact()">📋 Copy Fact</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const facts = [
+            // Animals
+            { text: "Octopuses have three hearts. Two pump blood to the gills, and one pumps it to the rest of the body.", category: "animals", emoji: "🐙" },
+            { text: "A group of flamingos is called a 'flamboyance'.", category: "animals", emoji: "🦩" },
+            { text: "Sloths can hold their breath longer than dolphins. They can hold it for up to 40 minutes.", category: "animals", emoji: "🦥" },
+            { text: "Cows have best friends and get stressed when separated from them.", category: "animals", emoji: "🐄" },
+            { text: "Elephants are the only mammals that can't jump.", category: "animals", emoji: "🐘" },
+            { text: "A snail can sleep for three years at a time.", category: "animals", emoji: "🐌" },
+            
+            // Science
+            { text: "Water can boil and freeze at the same time. This is called the triple point.", category: "science", emoji: "💧" },
+            { text: "The Earth's core is as hot as the surface of the sun.", category: "science", emoji: "🌍" },
+            { text: "Gold can be hammered so thin that it becomes transparent.", category: "science", emoji: "✨" },
+            { text: "The human brain can generate about 20 watts of power.", category: "science", emoji: "🧠" },
+            { text: "Light from the sun takes about 8 minutes to reach Earth.", category: "science", emoji: "☀️" },
+            { text: "The speed of light is exactly 299,792,458 meters per second.", category: "science", emoji: "⚡" },
+            
+            // History
+            { text: "The Great Wall of China is actually not visible from space with the naked eye.", category: "history", emoji: "🏯" },
+            { text: "Cleopatra lived closer in time to the moon landing than to the building of the pyramids.", category: "history", emoji: "👑" },
+            { text: "Oxford University is older than the Aztec Empire.", category: "history", emoji: "📚" },
+            { text: "The first known use of the word 'robot' was in a 1920 play by Karel Čapek.", category: "history", emoji: "🤖" },
+            { text: "The shortest war in history lasted only 38 minutes. It was between Britain and Zanzibar in 1896.", category: "history", emoji: "⚔️" },
+            
+            // Space
+            { text: "A day on Venus is longer than a year on Venus. It takes 243 Earth days to rotate and 225 days to orbit.", category: "space", emoji: "🪐" },
+            { text: "There are more stars in the universe than grains of sand on all the beaches on Earth.", category: "space", emoji: "⭐" },
+            { text: "The Milky Way galaxy is about 100,000 light-years across.", category: "space", emoji: "🌌" },
+            { text: "The largest known star is UY Scuti, which is 1,700 times larger than the Sun.", category: "space", emoji: "🔭" },
+            { text: "The temperature in space can reach -455°F (-270°C).", category: "space", emoji: "❄️" },
+            
+            // Human Body
+            { text: "The human nose can remember 50,000 different scents.", category: "human", emoji: "👃" },
+            { text: "Your heart beats about 100,000 times a day.", category: "human", emoji: "❤️" },
+            { text: "The strongest muscle in the body is the masseter (jaw muscle).", category: "human", emoji: "💪" },
+            { text: "You can't breathe and swallow at the same time.", category: "human", emoji: "😮" },
+            { text: "The human eye can distinguish about 10 million different colors.", category: "human", emoji: "👁️" },
+            
+            // Nature
+            { text: "A single mature tree can absorb up to 48 pounds of carbon dioxide per year.", category: "nature", emoji: "🌳" },
+            { text: "Bananas are berries, but strawberries are not.", category: "nature", emoji: "🍌" },
+            { text: "The Amazon rainforest produces 20% of the world's oxygen.", category: "nature", emoji: "🌿" },
+            { text: "Tulips were once more valuable than gold in Holland.", category: "nature", emoji: "🌷" },
+            { text: "The longest recorded flight of a chicken was 13 seconds.", category: "nature", emoji: "🐔" },
+            
+            // Technology
+            { text: "The first computer mouse was made of wood in 1964.", category: "technology", emoji: "🖱️" },
+            { text: "The first website ever created is still online: info.cern.ch.", category: "technology", emoji: "💻" },
+            { text: "The first digital camera was invented in 1975 and weighed 8 pounds.", category: "technology", emoji: "📷" },
+            { text: "The first text message was sent in 1992 and said 'Merry Christmas'.", category: "technology", emoji: "📱" },
+            { text: "The first domain name ever registered was symbolics.com in 1985.", category: "technology", emoji: "🌐" }
+        ];
+
+        let currentFacts = [];
+
+        function generateFact() {
+            const category = document.getElementById('categoryFilter').value;
+            const count = parseInt(document.getElementById('factCount').value);
+            
+            let filtered = facts;
+            if (category !== 'all') {
+                filtered = filtered.filter(f => f.category === category);
+            }
+            
+            if (filtered.length === 0) {
+                showToast('⚠️ No facts match your category');
+                return;
+            }
+            
+            // Select random facts
+            const selected = [];
+            const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+                selected.push(shuffled[i]);
+            }
+            currentFacts = selected;
+            
+            // Display first fact
+            displayFact(selected[0]);
+            
+            // Animation
+            const container = document.getElementById('factContainer');
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.style.transition = 'opacity 0.3s';
+                container.style.opacity = '1';
+            }, 50);
+        }
+
+        function displayFact(fact) {
+            document.getElementById('factEmoji').textContent = fact.emoji;
+            document.getElementById('factText').textContent = fact.text;
+            
+            const categoryLabels = {
+                animals: '🐙 Animals',
+                science: '🔬 Science',
+                history: '📜 History',
+                space: '🚀 Space',
+                human: '🧬 Human Body',
+                nature: '🌿 Nature',
+                technology: '💻 Technology'
+            };
+            document.getElementById('factCategory').textContent = categoryLabels[fact.category] || fact.category;
+            
+            // Random fact number
+            const factNum = Math.floor(Math.random() * 1000) + 1;
+            document.getElementById('factNumber').textContent = `Fact #${factNum}`;
+        }
+
+        function copyFact() {
+            if (currentFacts.length === 0) {
+                showToast('⚠️ Generate a fact first');
+                return;
+            }
+            
+            let text = '';
+            currentFacts.forEach((fact, i) => {
+                text += `${i+1}. ${fact.text}\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`✅ ${currentFacts.length} fact${currentFacts.length > 1 ? 's' : ''} copied!`);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast(`✅ ${currentFacts.length} fact${currentFacts.length > 1 ? 's' : ''} copied!`);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Generate on load
+        window.onload = function() {
+            generateFact();
+        };
+    </script>
+</body>
+</html>

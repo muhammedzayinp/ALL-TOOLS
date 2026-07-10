@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Fat Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-container .fat-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-container .fat-category {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .result-container .fat-category.essential { color: #3b82f6; }
+        .result-container .fat-category.athlete { color: #10b981; }
+        .result-container .fat-category.fitness { color: #34d399; }
+        .result-container .fat-category.average { color: #f59e0b; }
+        .result-container .fat-category.obese { color: #ef4444; }
+        .result-container .fat-details {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+        }
+        
+        .fat-scale {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+            position: relative;
+        }
+        .fat-scale .segment {
+            flex: 1;
+            height: 100%;
+        }
+        .fat-scale .essential { background: #3b82f6; }
+        .fat-scale .athlete { background: #10b981; }
+        .fat-scale .fitness { background: #34d399; }
+        .fat-scale .average { background: #f59e0b; }
+        .fat-scale .obese { background: #ef4444; }
+        .fat-scale .indicator {
+            width: 4px;
+            height: 16px;
+            background: #fff;
+            border-radius: 2px;
+            position: relative;
+            top: -4px;
+            transition: all 0.3s;
+        }
+        
+        .fat-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.15);
+            margin-top: 4px;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📏</span>
+        <h1>Body Fat Calculator</h1>
+        <p class="desc">Estimate your body fat percentage using the US Navy method</p>
+        
+        <div class="input-group">
+            <label>Gender</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female" selected>Female</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Age (years)</label>
+            <input type="number" id="age" value="30" min="1" max="120">
+        </div>
+        
+        <div class="input-group">
+            <label>Height (cm)</label>
+            <input type="number" id="height" value="175" step="0.1" min="1">
+        </div>
+        
+        <div class="input-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" value="70" step="0.1" min="1">
+        </div>
+        
+        <div class="input-group">
+            <label>Waist (cm)</label>
+            <input type="number" id="waist" value="85" step="0.1" min="1">
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:2px;">Measure at the narrowest point</div>
+        </div>
+        
+        <div class="input-group" id="neckGroup">
+            <label>Neck (cm)</label>
+            <input type="number" id="neck" value="40" step="0.1" min="1">
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:2px;">Measure below the Adam's apple</div>
+        </div>
+        
+        <div class="input-group" id="hipGroup" style="display:none;">
+            <label>Hip (cm)</label>
+            <input type="number" id="hip" value="100" step="0.1" min="1">
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:2px;">Measure at the widest point</div>
+        </div>
+        
+        <button class="btn" onclick="calculateBodyFat()">📊 Calculate Body Fat</button>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="fat-value" id="fatValue">22.5</div>
+            <div class="fat-category fitness" id="fatCategory">Fitness Range</div>
+            <div class="fat-details" id="fatDetails">You are in the fitness range for your age and gender.</div>
+            
+            <div class="fat-scale" id="fatScale">
+                <div class="segment essential"></div>
+                <div class="segment athlete"></div>
+                <div class="segment fitness"></div>
+                <div class="segment average"></div>
+                <div class="segment obese"></div>
+                <div class="indicator" id="fatIndicator" style="left:45%;"></div>
+            </div>
+            <div class="fat-labels">
+                <span>Essential</span>
+                <span>Athlete</span>
+                <span>Fitness</span>
+                <span>Average</span>
+                <span>Obese</span>
+            </div>
+        </div>
+        
+        <a href="file://fileserver/private/All%20Tools/index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calculateBodyFat() {
+            const gender = document.getElementById('gender').value;
+            const age = parseFloat(document.getElementById('age').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const neck = parseFloat(document.getElementById('neck').value);
+            const hip = parseFloat(document.getElementById('hip').value);
+            
+            if (!age || !height || !weight || !waist || !neck || age <= 0 || height <= 0 || weight <= 0 || waist <= 0 || neck <= 0) {
+                showToast('⚠️ Please enter valid values');
+                return;
+            }
+            
+            if (gender === 'female' && (!hip || hip <= 0)) {
+                showToast('⚠️ Please enter hip measurement for females');
+                return;
+            }
+            
+            // US Navy Body Fat Formula
+            let bodyFat;
+            
+            if (gender === 'male') {
+                // For males: 86.010 * log10(waist - neck) - 70.041 * log10(height) + 36.76
+                const waistNeck = waist - neck;
+                if (waistNeck <= 0) {
+                    showToast('⚠️ Waist must be greater than neck');
+                    return;
+                }
+                bodyFat = 86.010 * Math.log10(waistNeck) - 70.041 * Math.log10(height) + 36.76;
+            } else {
+                // For females: 163.205 * log10(waist + hip - neck) - 97.684 * log10(height) - 78.387
+                const waistHipNeck = waist + hip - neck;
+                if (waistHipNeck <= 0) {
+                    showToast('⚠️ Waist + Hip must be greater than Neck');
+                    return;
+                }
+                bodyFat = 163.205 * Math.log10(waistHipNeck) - 97.684 * Math.log10(height) - 78.387;
+            }
+            
+            bodyFat = Math.round(bodyFat * 10) / 10;
+            
+            if (bodyFat < 3) bodyFat = 3;
+            if (bodyFat > 60) bodyFat = 60;
+            
+            // Determine category based on age and gender
+            let category, categoryClass, details;
+            
+            // Age-adjusted ranges
+            let essentialMin, essentialMax, athleteMin, athleteMax, fitnessMin, fitnessMax, avgMin, avgMax;
+            
+            if (gender === 'male') {
+                if (age < 30) {
+                    essentialMin = 2; essentialMax = 5;
+                    athleteMin = 6; athleteMax = 13;
+                    fitnessMin = 14; fitnessMax = 17;
+                    avgMin = 18; avgMax = 24;
+                } else if (age < 40) {
+                    essentialMin = 2; essentialMax = 5;
+                    athleteMin = 6; athleteMax = 14;
+                    fitnessMin = 15; fitnessMax = 19;
+                    avgMin = 20; avgMax = 25;
+                } else if (age < 50) {
+                    essentialMin = 2; essentialMax = 5;
+                    athleteMin = 6; athleteMax = 15;
+                    fitnessMin = 16; fitnessMax = 20;
+                    avgMin = 21; avgMax = 27;
+                } else {
+                    essentialMin = 2; essentialMax = 5;
+                    athleteMin = 6; athleteMax = 16;
+                    fitnessMin = 17; fitnessMax = 21;
+                    avgMin = 22; avgMax = 28;
+                }
+            } else {
+                if (age < 30) {
+                    essentialMin = 10; essentialMax = 13;
+                    athleteMin = 14; athleteMax = 20;
+                    fitnessMin = 21; fitnessMax = 24;
+                    avgMin = 25; avgMax = 31;
+                } else if (age < 40) {
+                    essentialMin = 10; essentialMax = 13;
+                    athleteMin = 14; athleteMax = 21;
+                    fitnessMin = 22; fitnessMax = 25;
+                    avgMin = 26; avgMax = 32;
+                } else if (age < 50) {
+                    essentialMin = 10; essentialMax = 13;
+                    athleteMin = 14; athleteMax = 22;
+                    fitnessMin = 23; fitnessMax = 27;
+                    avgMin = 28; avgMax = 33;
+                } else {
+                    essentialMin = 10; essentialMax = 13;
+                    athleteMin = 14; athleteMax = 23;
+                    fitnessMin = 24; fitnessMax = 28;
+                    avgMin = 29; avgMax = 35;
+                }
+            }
+            
+            let percent;
+            if (bodyFat <= essentialMax) {
+                category = 'Essential Fat';
+                categoryClass = 'essential';
+                details = 'Essential fat is necessary for normal bodily functions.';
+                percent = (bodyFat / essentialMax) * 12;
+            } else if (bodyFat <= athleteMax) {
+                category = 'Athlete Range';
+                categoryClass = 'athlete';
+                details = 'You have an athletic body composition.';
+                percent = 12 + ((bodyFat - essentialMax) / (athleteMax - essentialMax)) * 16;
+            } else if (bodyFat <= fitnessMax) {
+                category = 'Fitness Range';
+                categoryClass = 'fitness';
+                details = 'You are in the fitness range. Great work!';
+                percent = 28 + ((bodyFat - athleteMax) / (fitnessMax - athleteMax)) * 16;
+            } else if (bodyFat <= avgMax) {
+                category = 'Average Range';
+                categoryClass = 'average';
+                details = 'You are in the average range. Consider improving your fitness.';
+                percent = 44 + ((bodyFat - fitnessMax) / (avgMax - fitnessMax)) * 20;
+            } else {
+                category = 'Obese Range';
+                categoryClass = 'obese';
+                details = 'You are in the obese range. Please consult a healthcare provider.';
+                percent = 64 + Math.min(((bodyFat - avgMax) / avgMax) * 20, 20);
+            }
+            
+            // Update display
+            document.getElementById('fatValue').textContent = bodyFat + '%';
+            const categoryEl = document.getElementById('fatCategory');
+            categoryEl.textContent = category;
+            categoryEl.className = `fat-category ${categoryClass}`;
+            document.getElementById('fatDetails').textContent = details;
+            
+            // Update scale indicator (0-60 range)
+            const indicatorPercent = Math.min((bodyFat / 60) * 100, 100);
+            document.getElementById('fatIndicator').style.left = `${indicatorPercent}%`;
+            
+            showToast('✅ Body fat calculated successfully!');
+        }
+
+        function toggleHipField() {
+            const gender = document.getElementById('gender').value;
+            const hipGroup = document.getElementById('hipGroup');
+            if (gender === 'female') {
+                hipGroup.style.display = 'block';
+            } else {
+                hipGroup.style.display = 'none';
+            }
+            calculateBodyFat();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Event listeners
+        document.getElementById('gender').addEventListener('change', toggleHipField);
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', calculateBodyFat);
+            input.addEventListener('change', calculateBodyFat);
+        });
+
+        // Initialize
+        window.onload = function() {
+            toggleHipField();
+            calculateBodyFat();
+        };
+    </script>
+</body>
+</html>

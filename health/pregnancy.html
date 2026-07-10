@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pregnancy Due Date Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-main {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-sub {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .result-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.0rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .result-detail {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 12px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        @media (max-width: 480px) {
+            .result-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🤰</span>
+        <h1>Pregnancy Due Date Calculator</h1>
+        <p class="desc">Calculate estimated due date and key pregnancy milestones</p>
+        
+        <div class="input-group">
+            <label>Last Menstrual Period (LMP)</label>
+            <input type="date" id="lmp">
+        </div>
+        
+        <div class="input-group">
+            <label>Cycle Length (days)</label>
+            <select id="cycle">
+                <option value="28" selected>28 days (average)</option>
+                <option value="21">21 days</option>
+                <option value="24">24 days</option>
+                <option value="26">26 days</option>
+                <option value="30">30 days</option>
+                <option value="32">32 days</option>
+                <option value="35">35 days</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="calcPregnancy()">🤰 Calculate Due Date</button>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-main" id="dueDate">January 15, 2025</div>
+            <div class="result-sub">Estimated Due Date</div>
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="label">Conception</div>
+                    <div class="value" id="conception">Apr 24, 2024</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Trimester 1</div>
+                    <div class="value" id="tri1">Apr 24 - Jul 22</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Trimester 2</div>
+                    <div class="value" id="tri2">Jul 23 - Oct 28</div>
+                </div>
+            </div>
+            <div class="result-detail" id="pregDetail">Currently 12 weeks • 84 days until due date</div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calcPregnancy() {
+            const lmpDate = document.getElementById('lmp').value;
+            const cycle = parseInt(document.getElementById('cycle').value);
+            
+            if (!lmpDate) {
+                showToast('⚠️ Please select your last menstrual period date');
+                return;
+            }
+            
+            const lmp = new Date(lmpDate);
+            const today = new Date();
+            
+            // Due date: LMP + 280 days (40 weeks) + (cycle - 28) adjustment
+            const dueDate = new Date(lmp);
+            const cycleAdjust = cycle - 28;
+            dueDate.setDate(dueDate.getDate() + 280 + cycleAdjust);
+            
+            // Conception date: LMP + 14 days (assuming day 14 ovulation)
+            const conception = new Date(lmp);
+            conception.setDate(conception.getDate() + 14);
+            
+            // Trimesters
+            const tri1Start = new Date(lmp);
+            const tri1End = new Date(lmp);
+            tri1End.setDate(tri1End.getDate() + 90);
+            
+            const tri2Start = new Date(tri1End);
+            const tri2End = new Date(tri1End);
+            tri2End.setDate(tri2End.getDate() + 98);
+            
+            // Format dates
+            const formatDate = (date) => {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+            };
+            
+            const formatShort = (date) => {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[date.getMonth()]} ${date.getDate()}`;
+            };
+            
+            document.getElementById('dueDate').textContent = formatDate(dueDate);
+            document.getElementById('conception').textContent = formatDate(conception);
+            document.getElementById('tri1').textContent = `${formatShort(lmp)} - ${formatShort(tri1End)}`;
+            document.getElementById('tri2').textContent = `${formatShort(tri2Start)} - ${formatShort(tri2End)}`;
+            
+            // Calculate current week and days remaining
+            const diffTime = today - lmp;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(diffDays / 7);
+            const days = diffDays % 7;
+            
+            const daysUntilDue = Math.max(0, Math.floor((dueDate - today) / (1000 * 60 * 60 * 24)));
+            
+            if (diffDays < 0) {
+                document.getElementById('pregDetail').textContent = 'LMP date is in the future. Please enter a past date.';
+            } else if (diffDays > 280) {
+                document.getElementById('pregDetail').textContent = 'This pregnancy appears to have passed the due date.';
+            } else {
+                document.getElementById('pregDetail').textContent = 
+                    `Week ${weeks+1} (${weeks} weeks, ${days} days) • ${daysUntilDue} days until due date`;
+            }
+            
+            showToast('✅ Due date calculated!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        document.getElementById('lmp').addEventListener('change', calcPregnancy);
+        document.getElementById('cycle').addEventListener('change', calcPregnancy);
+
+        // Set default LMP to 8 weeks ago
+        window.onload = function() {
+            const today = new Date();
+            const eightWeeksAgo = new Date(today);
+            eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
+            document.getElementById('lmp').value = eightWeeksAgo.toISOString().split('T')[0];
+            calcPregnancy();
+        };
+    </script>
+</body>
+</html>

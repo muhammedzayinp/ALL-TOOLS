@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horoscope - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .zodiac-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .zodiac-btn {
+            padding: 12px 4px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .zodiac-btn:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+        }
+        .zodiac-btn.active {
+            background: rgba(99,102,241,0.15);
+            border-color: #6366f1;
+            box-shadow: 0 0 20px rgba(99,102,241,0.1);
+        }
+        .zodiac-btn .symbol {
+            font-size: 1.8rem;
+            display: block;
+        }
+        .zodiac-btn .name {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        .zodiac-btn.active .name {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .horoscope-display {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 16px 0;
+            min-height: 250px;
+        }
+        .horoscope-display .zodiac-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .horoscope-display .zodiac-header .big-symbol {
+            font-size: 3rem;
+        }
+        .horoscope-display .zodiac-header .info {
+            flex: 1;
+        }
+        .horoscope-display .zodiac-header .info .name {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .horoscope-display .zodiac-header .info .details {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+        }
+        .horoscope-display .zodiac-header .info .dates {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+        }
+        .horoscope-display .horoscope-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.7);
+        }
+        .horoscope-display .horoscope-text .stars {
+            display: flex;
+            gap: 4px;
+            margin: 8px 0;
+        }
+        .horoscope-display .horoscope-text .stars .star {
+            color: #f59e0b;
+            font-size: 1.2rem;
+        }
+        .horoscope-display .horoscope-text .stars .star.empty {
+            color: rgba(255,255,255,0.1);
+        }
+        
+        .horoscope-display .traits {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .horoscope-display .traits .trait {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+        .horoscope-display .traits .trait .label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .horoscope-display .traits .trait .value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            margin-top: 2px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">♈</span>
+        <h1>Horoscope</h1>
+        <p class="desc">Discover your daily horoscope and zodiac traits</p>
+        
+        <div class="zodiac-selector" id="zodiacSelector"></div>
+        
+        <div class="horoscope-display" id="horoscopeDisplay">
+            <div class="zodiac-header">
+                <span class="big-symbol" id="bigSymbol">♈</span>
+                <div class="info">
+                    <div class="name" id="zodiacName">Aries</div>
+                    <div class="details" id="zodiacDetails">Fire • Cardinal • Mars</div>
+                    <div class="dates" id="zodiacDates">Mar 21 - Apr 19</div>
+                </div>
+            </div>
+            <div class="horoscope-text" id="horoscopeText">
+                <div class="stars" id="starRating"></div>
+                <div id="horoscopeMessage">Today is a day for new beginnings. Your energy is high and you're ready to take on the world. Trust your instincts and go after what you want.</div>
+            </div>
+            <div class="traits">
+                <div class="trait">
+                    <div class="label">Element</div>
+                    <div class="value" id="traitElement">🔥 Fire</div>
+                </div>
+                <div class="trait">
+                    <div class="label">Lucky Number</div>
+                    <div class="value" id="traitNumber">7</div>
+                </div>
+                <div class="trait">
+                    <div class="label">Mood</div>
+                    <div class="value" id="traitMood">⚡ Energetic</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn-secondary" onclick="copyHoroscope()">📋 Copy Horoscope</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const zodiacData = [
+            { 
+                sign: 'Aries', symbol: '♈', element: 'Fire', modality: 'Cardinal', planet: 'Mars',
+                dates: 'Mar 21 - Apr 19', startMonth: 2, startDay: 21, endMonth: 3, endDay: 19,
+                traits: { element: '🔥 Fire', lucky: '7', mood: '⚡ Energetic' },
+                horoscopes: [
+                    "Today is a day for new beginnings. Your energy is high and you're ready to take on the world. Trust your instincts and go after what you want.",
+                    "Your confidence is contagious today. People are drawn to your positive energy. Use this to build new connections.",
+                    "A challenging situation at work will test your patience. Stay calm and think before you act. Your leadership skills will shine.",
+                    "Love is in the air! Someone special may be thinking about you. Don't be afraid to make the first move.",
+                    "Your creativity is at an all-time high. This is a great time to start that project you've been thinking about."
+                ]
+            },
+            { 
+                sign: 'Taurus', symbol: '♉', element: 'Earth', modality: 'Fixed', planet: 'Venus',
+                dates: 'Apr 20 - May 20', startMonth: 3, startDay: 20, endMonth: 4, endDay: 20,
+                traits: { element: '🌍 Earth', lucky: '3', mood: '😌 Calm' },
+                horoscopes: [
+                    "Take a moment to appreciate the beauty around you today. A simple pleasure will bring you great joy.",
+                    "Your patience is your greatest asset. Something you've been working on is about to come to fruition.",
+                    "A financial opportunity may present itself today. Trust your practical instincts and do your research.",
+                    "Your relationships are your anchor. Spend quality time with loved ones and nurture those connections.",
+                    "Sometimes the best thing you can do is nothing. Take a break and recharge your batteries."
+                ]
+            },
+            { 
+                sign: 'Gemini', symbol: '♊', element: 'Air', modality: 'Mutable', planet: 'Mercury',
+                dates: 'May 21 - Jun 20', startMonth: 4, startDay: 21, endMonth: 5, endDay: 20,
+                traits: { element: '💨 Air', lucky: '5', mood: '💬 Chatty' },
+                horoscopes: [
+                    "Your mind is sharp and your words are powerful today. Use your communication skills to inspire others.",
+                    "A new idea will spark your curiosity. Follow it and see where it leads. You might be surprised.",
+                    "Your social energy is high. This is a great day to network and make new connections.",
+                    "You may feel pulled in many directions today. Focus on what matters most and let go of the rest.",
+                    "Your wit and charm will win people over. Don't be afraid to shine."
+                ]
+            },
+            { 
+                sign: 'Cancer', symbol: '♋', element: 'Water', modality: 'Cardinal', planet: 'Moon',
+                dates: 'Jun 21 - Jul 22', startMonth: 5, startDay: 21, endMonth: 6, endDay: 22,
+                traits: { element: '💧 Water', lucky: '2', mood: '❤️ Nurturing' },
+                horoscopes: [
+                    "Trust your intuition today. Your heart knows the way even when your mind is unsure.",
+                    "A moment of self-care will do wonders for your spirit. Take time to recharge.",
+                    "Your emotional depth is a gift. Someone close to you needs your understanding.",
+                    "A memory from the past may surface today. Honor it, then let it go.",
+                    "Your home is your sanctuary. Make it a place of peace and comfort."
+                ]
+            },
+            { 
+                sign: 'Leo', symbol: '♌', element: 'Fire', modality: 'Fixed', planet: 'Sun',
+                dates: 'Jul 23 - Aug 22', startMonth: 6, startDay: 23, endMonth: 7, endDay: 22,
+                traits: { element: '🔥 Fire', lucky: '1', mood: '🌟 Radiant' },
+                horoscopes: [
+                    "Today is your day to shine! Your confidence and charisma are off the charts.",
+                    "A creative project is calling your name. Answer it with passion and enthusiasm.",
+                    "Your generosity will touch someone's heart today. Share your light with others.",
+                    "A leadership opportunity may come your way. You're ready for this challenge.",
+                    "Celebrate your wins, big and small. You've earned it."
+                ]
+            },
+            { 
+                sign: 'Virgo', symbol: '♍', element: 'Earth', modality: 'Mutable', planet: 'Mercury',
+                dates: 'Aug 23 - Sep 22', startMonth: 7, startDay: 23, endMonth: 8, endDay: 22,
+                traits: { element: '🌍 Earth', lucky: '4', mood: '🧹 Organized' },
+                horoscopes: [
+                    "Your attention to detail is your superpower today. Something you've been working on is ready for its final touches.",
+                    "A problem that seemed impossible will yield to your logical approach. Keep at it.",
+                    "Your health is your wealth. Make time for self-care and healthy habits.",
+                    "Your skills are in demand. You have something unique to offer the world.",
+                    "Sometimes the best thing you can do is let go of perfectionism and enjoy the process."
+                ]
+            },
+            { 
+                sign: 'Libra', symbol: '♎', element: 'Air', modality: 'Cardinal', planet: 'Venus',
+                dates: 'Sep 23 - Oct 22', startMonth: 8, startDay: 23, endMonth: 9, endDay: 22,
+                traits: { element: '💨 Air', lucky: '6', mood: '⚖️ Balanced' },
+                horoscopes: [
+                    "Balance is the key to your happiness today. Find harmony in all areas of your life.",
+                    "A relationship issue can be resolved through honest communication. Speak your truth with kindness.",
+                    "Beauty is all around you. Take a moment to appreciate the art in everyday life.",
+                    "Your diplomatic skills will help resolve a conflict today. You're a natural peacemaker.",
+                    "Sometimes the best decision is no decision. Take your time and weigh your options."
+                ]
+            },
+            { 
+                sign: 'Scorpio', symbol: '♏', element: 'Water', modality: 'Fixed', planet: 'Pluto',
+                dates: 'Oct 23 - Nov 21', startMonth: 9, startDay: 23, endMonth: 10, endDay: 21,
+                traits: { element: '💧 Water', lucky: '8', mood: '🔮 Intense' },
+                horoscopes: [
+                    "Your passion and intensity are magnetic today. Use this energy to pursue your goals.",
+                    "A secret may be revealed. Handle it with care and discretion.",
+                    "Transformation is on the horizon. You're ready for this change even if you don't feel it yet.",
+                    "Your loyalty is your greatest strength. Someone close to you needs your support.",
+                    "Your inner strength is greater than you know. You can handle anything that comes your way."
+                ]
+            },
+            { 
+                sign: 'Sagittarius', symbol: '♐', element: 'Fire', modality: 'Mutable', planet: 'Jupiter',
+                dates: 'Nov 22 - Dec 21', startMonth: 10, startDay: 22, endMonth: 11, endDay: 21,
+                traits: { element: '🔥 Fire', lucky: '9', mood: '🗺️ Adventurous' },
+                horoscopes: [
+                    "Your adventurous spirit is calling you today. A new experience awaits.",
+                    "A philosophical insight will change your perspective. Embrace the growth.",
+                    "Your sense of humor is your greatest asset. Use it to lift someone's spirits.",
+                    "A journey, either literal or figurative, will bring you wisdom.",
+                    "Don't be afraid to dream big. The universe wants you to aim high."
+                ]
+            },
+            { 
+                sign: 'Capricorn', symbol: '♑', element: 'Earth', modality: 'Cardinal', planet: 'Saturn',
+                dates: 'Dec 22 - Jan 19', startMonth: 11, startDay: 22, endMonth: 0, endDay: 19,
+                traits: { element: '🌍 Earth', lucky: '10', mood: '🏔️ Determined' },
+                horoscopes: [
+                    "Your discipline and determination will pay off today. Keep climbing your mountain.",
+                    "A professional opportunity is within reach. Stay focused and you'll succeed.",
+                    "Your wisdom is your greatest gift. Someone values your advice.",
+                    "Structure and order bring you peace today. Organize your world.",
+                    "You've earned the respect you deserve. Don't forget to acknowledge your achievements."
+                ]
+            },
+            { 
+                sign: 'Aquarius', symbol: '♒', element: 'Air', modality: 'Fixed', planet: 'Uranus',
+                dates: 'Jan 20 - Feb 18', startMonth: 0, startDay: 20, endMonth: 1, endDay: 18,
+                traits: { element: '💨 Air', lucky: '11', mood: '💡 Innovative' },
+                horoscopes: [
+                    "Your innovative mind is needed today. A fresh perspective will solve a problem.",
+                    "Your uniqueness is your strength. Don't be afraid to stand out from the crowd.",
+                    "A humanitarian impulse will guide you today. Make a difference in someone's life.",
+                    "A conversation will spark a brilliant idea. Write it down before you forget it.",
+                    "Embrace your individuality. You were meant to be different."
+                ]
+            },
+            { 
+                sign: 'Pisces', symbol: '♓', element: 'Water', modality: 'Mutable', planet: 'Neptune',
+                dates: 'Feb 19 - Mar 20', startMonth: 1, startDay: 19, endMonth: 2, endDay: 20,
+                traits: { element: '💧 Water', lucky: '12', mood: '🎨 Dreamy' },
+                horoscopes: [
+                    "Your creativity and imagination are flowing today. Channel them into a creative project.",
+                    "Trust your dreams and intuition. They are trying to tell you something important.",
+                    "A moment of compassion will heal a wound. Your empathy is your superpower.",
+                    "Your spiritual side is calling you. Take time for reflection and meditation.",
+                    "Let your heart guide you. It knows the way."
+                ]
+            }
+        ];
+
+        let currentZodiacIndex = 0;
+
+        function initZodiacSelector() {
+            const container = document.getElementById('zodiacSelector');
+            zodiacData.forEach((z, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'zodiac-btn' + (index === 0 ? ' active' : '');
+                btn.innerHTML = `
+                    <span class="symbol">${z.symbol}</span>
+                    <span class="name">${z.sign}</span>
+                `;
+                btn.onclick = () => selectZodiac(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectZodiac(index) {
+            currentZodiacIndex = index;
+            
+            // Update buttons
+            document.querySelectorAll('.zodiac-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            
+            // Update display
+            updateHoroscope(index);
+        }
+
+        function updateHoroscope(index) {
+            const z = zodiacData[index];
+            const randomHoroscope = z.horoscopes[Math.floor(Math.random() * z.horoscopes.length)];
+            
+            document.getElementById('bigSymbol').textContent = z.symbol;
+            document.getElementById('zodiacName').textContent = z.sign;
+            document.getElementById('zodiacDetails').textContent = `${z.element} • ${z.modality} • ${z.planet}`;
+            document.getElementById('zodiacDates').textContent = z.dates;
+            
+            // Star rating (random 3-5 stars)
+            const stars = Math.floor(Math.random() * 3) + 3;
+            const starContainer = document.getElementById('starRating');
+            starContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const span = document.createElement('span');
+                span.className = 'star' + (i < stars ? '' : ' empty');
+                span.textContent = '⭐';
+                starContainer.appendChild(span);
+            }
+            
+            document.getElementById('horoscopeMessage').textContent = randomHoroscope;
+            document.getElementById('traitElement').textContent = z.traits.element;
+            document.getElementById('traitNumber').textContent = z.traits.lucky;
+            document.getElementById('traitMood').textContent = z.traits.mood;
+        }
+
+        function copyHoroscope() {
+            const z = zodiacData[currentZodiacIndex];
+            const message = document.getElementById('horoscopeMessage').textContent;
+            const text = `${z.symbol} ${z.sign} Horoscope\n\n"${message}"`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Horoscope copied to clipboard!');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('✅ Horoscope copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Initialize
+        initZodiacSelector();
+        updateHoroscope(0);
+    </script>
+</body>
+</html>

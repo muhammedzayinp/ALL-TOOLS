@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Rep Max Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .result-item .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-item .unit {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+        }
+        .result-detail {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 12px;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        @media (max-width: 480px) {
+            .result-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">💪</span>
+        <h1>One Rep Max Calculator</h1>
+        <p class="desc">Estimate your 1RM using the Brzycki formula</p>
+        
+        <div class="input-group">
+            <label>Weight Lifted (kg)</label>
+            <input type="number" id="weight" value="100" step="0.5" min="1">
+        </div>
+        
+        <div class="input-group">
+            <label>Reps Performed</label>
+            <input type="number" id="reps" value="8" min="1" max="20">
+        </div>
+        
+        <button class="btn" onclick="calc1RM()">💪 Calculate 1RM</button>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="label">1RM</div>
+                    <div class="value" id="rm1">125</div>
+                    <div class="unit">kg</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">3-5 RM</div>
+                    <div class="value" id="rm5">112</div>
+                    <div class="unit">kg</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">10 RM</div>
+                    <div class="value" id="rm10">95</div>
+                    <div class="unit">kg</div>
+                </div>
+            </div>
+            <div class="result-detail" id="rmDetail">100 kg × 8 reps = 125 kg estimated 1RM</div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calc1RM() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const reps = parseInt(document.getElementById('reps').value);
+            
+            if (!weight || weight <= 0 || !reps || reps <= 0) {
+                showToast('⚠️ Please enter valid values');
+                return;
+            }
+            
+            // Brzycki formula: 1RM = weight / (1.0278 - (0.0278 * reps))
+            const rm1 = weight / (1.0278 - (0.0278 * reps));
+            
+            // Epley formula for comparison: weight * (1 + reps/30)
+            const rm1Epley = weight * (1 + reps / 30);
+            
+            // Average of both formulas
+            const finalRM1 = Math.round((rm1 + rm1Epley) / 2);
+            
+            // Calculate other RMs using percentage tables
+            // 1RM = 100%, 3RM = 93%, 5RM = 87%, 8RM = 80%, 10RM = 75%
+            const rm3 = Math.round(finalRM1 * 0.93);
+            const rm5 = Math.round(finalRM1 * 0.87);
+            const rm8 = Math.round(finalRM1 * 0.80);
+            const rm10 = Math.round(finalRM1 * 0.75);
+            
+            document.getElementById('rm1').textContent = finalRM1;
+            document.getElementById('rm5').textContent = rm5;
+            document.getElementById('rm10').textContent = rm10;
+            document.getElementById('rmDetail').textContent = 
+                `${weight} kg × ${reps} reps = ${finalRM1} kg estimated 1RM • 5RM: ${rm5} kg`;
+            
+            showToast('✅ 1RM calculated!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        document.getElementById('weight').addEventListener('input', calc1RM);
+        document.getElementById('reps').addEventListener('input', calc1RM);
+
+        window.onload = calc1RM;
+    </script>
+</body>
+</html>

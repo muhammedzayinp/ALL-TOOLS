@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Formatter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            min-height: 120px;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            max-height: 250px;
+            overflow: auto;
+        }
+        .result-container pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        .result-container .error {
+            color: #ef4444;
+        }
+        .result-container .tag { color: #818cf8; }
+        .result-container .attr { color: #34d399; }
+        .result-container .value { color: #fbbf24; }
+        .result-container .text { color: rgba(255,255,255,0.7); }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .result-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .options-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+        .options-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .options-row input[type="checkbox"] {
+            accent-color: #6366f1;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🌐</span>
+        <h1>HTML Formatter</h1>
+        <p class="desc">Format and beautify your HTML code with proper indentation</p>
+        
+        <div class="input-group">
+            <label>Input HTML</label>
+            <textarea id="htmlInput" placeholder="<div><p>Hello World</p></div>"></textarea>
+        </div>
+        
+        <div class="options-row">
+            <label>
+                <input type="checkbox" id="indentWithTabs">
+                Indent with Tabs
+            </label>
+            <label>
+                <input type="checkbox" id="preserveComments" checked>
+                Preserve Comments
+            </label>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="formatHTML()">✨ Format</button>
+            <button class="btn btn-secondary" onclick="minifyHTML()">📦 Minify</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="result-wrapper">
+            <div class="result-container" id="resultContainer">
+                <pre id="resultOutput"><span style="color: rgba(255,255,255,0.3);">Formatted HTML will appear here...</span></pre>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function formatHTML() {
+            const input = document.getElementById('htmlInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter some HTML');
+                return;
+            }
+            
+            try {
+                const useTabs = document.getElementById('indentWithTabs').checked;
+                const preserveComments = document.getElementById('preserveComments').checked;
+                const indent = useTabs ? '\t' : '  ';
+                
+                let formatted = formatHTMLCode(input, indent, preserveComments);
+                document.getElementById('resultOutput').innerHTML = formatted;
+                document.getElementById('resultOutput').className = '';
+                showToast('✅ HTML formatted successfully!');
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Error formatting HTML');
+            }
+        }
+
+        function minifyHTML() {
+            const input = document.getElementById('htmlInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter some HTML');
+                return;
+            }
+            
+            try {
+                let minified = input.replace(/\s+/g, ' ');
+                minified = minified.replace(/>\s+</g, '><');
+                minified = minified.trim();
+                document.getElementById('resultOutput').innerHTML = minified;
+                document.getElementById('resultOutput').className = '';
+                showToast('✅ HTML minified successfully!');
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Error minifying HTML');
+            }
+        }
+
+        function formatHTMLCode(html, indent, preserveComments) {
+            let formatted = '';
+            let indentLevel = 0;
+            let i = 0;
+            let inTag = false;
+            let inComment = false;
+            let currentLine = '';
+            
+            // Simple HTML formatter
+            const lines = html.split('\n');
+            let result = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // Parse tags
+                let parts = [];
+                let current = '';
+                let inTagLocal = false;
+                let inString = false;
+                let stringChar = '';
+                
+                for (let char of line) {
+                    if (char === '"' || char === "'") {
+                        if (!inString) {
+                            inString = true;
+                            stringChar = char;
+                            current += char;
+                        } else if (char === stringChar) {
+                            inString = false;
+                            current += char;
+                        } else {
+                            current += char;
+                        }
+                        continue;
+                    }
+                    
+                    if (inString) {
+                        current += char;
+                        continue;
+                    }
+                    
+                    if (char === '<' && !inTagLocal) {
+                        if (current.trim()) {
+                            parts.push({type: 'text', content: current.trim()});
+                        }
+                        current = '<';
+                        inTagLocal = true;
+                    } else if (char === '>' && inTagLocal) {
+                        current += '>';
+                        parts.push({type: 'tag', content: current});
+                        current = '';
+                        inTagLocal = false;
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                if (current.trim()) {
+                    parts.push({type: 'text', content: current.trim()});
+                }
+                
+                // Process parts
+                let lineParts = [];
+                for (let part of parts) {
+                    if (part.type === 'tag') {
+                        // Check if closing tag
+                        const isClosing = part.content.startsWith('</');
+                        const isSelfClosing = part.content.endsWith('/>');
+                        const isComment = part.content.startsWith('<!--');
+                        
+                        if (isComment && !preserveComments) {
+                            continue;
+                        }
+                        
+                        if (isClosing) {
+                            indentLevel = Math.max(0, indentLevel - 1);
+                        }
+                        
+                        let indentStr = indent.repeat(indentLevel);
+                        let lineContent = indentStr + part.content;
+                        
+                        if (!isClosing && !isSelfClosing && !isComment) {
+                            // Opening tag - check if it's a block element
+                            const tagName = part.content.match(/<([a-zA-Z0-9]+)/);
+                            if (tagName && ['div','p','h1','h2','h3','h4','h5','h6','ul','ol','li','table','tr','section','article','header','footer','nav','main','aside','form'].includes(tagName[1].toLowerCase())) {
+                                // Block element - new line
+                                lineParts.push({content: lineContent, newLine: true});
+                                indentLevel++;
+                            } else {
+                                // Inline element
+                                lineParts.push({content: lineContent, newLine: false});
+                                indentLevel++;
+                            }
+                        } else if (isSelfClosing) {
+                            lineParts.push({content: indentStr + part.content, newLine: true});
+                        } else if (isComment) {
+                            lineParts.push({content: indentStr + part.content, newLine: true});
+                        } else {
+                            // Closing tag
+                            lineParts.push({content: indentStr + part.content, newLine: true});
+                        }
+                    } else {
+                        // Text content
+                        if (part.content.trim()) {
+                            lineParts.push({content: indent.repeat(indentLevel) + part.content.trim(), newLine: true});
+                        }
+                    }
+                }
+                
+                for (let part of lineParts) {
+                    if (part.newLine) {
+                        result.push(part.content);
+                    } else {
+                        if (result.length > 0) {
+                            result[result.length - 1] += ' ' + part.content;
+                        } else {
+                            result.push(part.content);
+                        }
+                    }
+                }
+            }
+            
+            formatted = result.join('\n');
+            
+            // Clean up
+            formatted = formatted.replace(/\n\s*\n/g, '\n');
+            
+            return formatted;
+        }
+
+        function clearAll() {
+            document.getElementById('htmlInput').value = '';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Formatted HTML will appear here...</span>';
+            document.getElementById('resultOutput').className = '';
+            showToast('🗑️ Cleared');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultOutput').textContent;
+            if (!text || text.includes('will appear here')) {
+                showToast('⚠️ Nothing to copy');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied to clipboard!');
+            }).catch(() => {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                const el = document.getElementById('resultOutput');
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('copy');
+                showToast('✅ Copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Load sample data on load
+        window.onload = function() {
+            const sample = `<!DOCTYPE html>
+<html>
+<head>
+<title>My Page</title>
+</head>
+<body>
+<header>
+<h1>Welcome</h1>
+<nav>
+<ul>
+<li><a href="#">Home</a></li>
+<li><a href="#">About</a></li>
+</ul>
+</nav>
+</header>
+<main>
+<section>
+<h2>Section Title</h2>
+<p>This is a paragraph with <strong>bold</strong> text.</p>
+</section>
+</main>
+<footer>
+<p>© 2024</p>
+</footer>
+</body>
+</html>`;
+            document.getElementById('htmlInput').value = sample;
+            formatHTML();
+        };
+    </script>
+</body>
+</html>

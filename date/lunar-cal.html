@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Calendar - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input[type="date"] {
+            color-scheme: dark;
+        }
+        .input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .result-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+        }
+        .result-item .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.3rem;
+        }
+        .result-item.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .phase-display {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            margin: 12px 0;
+        }
+        .phase-display .phase-icon {
+            font-size: 4rem;
+            display: block;
+        }
+        .phase-display .phase-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-top: 8px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .phase-display .phase-date {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+        
+        .moon-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .moon-info .info-item {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        .moon-info .info-item .label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+        }
+        .moon-info .info-item .value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🌙</span>
+        <h1>Lunar Calendar</h1>
+        <p class="desc">Discover moon phases and lunar information for any date</p>
+        
+        <div class="input-group">
+            <label>Select Date</label>
+            <input type="date" id="dateInput">
+        </div>
+        
+        <button class="btn" onclick="calculateLunar()">🌙 Get Lunar Info</button>
+        
+        <div class="phase-display" id="phaseDisplay">
+            <span class="phase-icon" id="phaseIcon">🌕</span>
+            <div class="phase-name" id="phaseName">Full Moon</div>
+            <div class="phase-date" id="phaseDate">-</div>
+        </div>
+        
+        <div class="moon-info">
+            <div class="info-item">
+                <div class="label">Illumination</div>
+                <div class="value" id="illumination">-</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Moon Age</div>
+                <div class="value" id="moonAge">-</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Distance</div>
+                <div class="value" id="moonDistance">-</div>
+            </div>
+        </div>
+        
+        <div class="result-grid" id="resultGrid">
+            <div class="result-item">
+                <div class="label">Next New Moon</div>
+                <div class="value" id="nextNewMoon">-</div>
+            </div>
+            <div class="result-item">
+                <div class="label">Next Full Moon</div>
+                <div class="value" id="nextFullMoon">-</div>
+            </div>
+            <div class="result-item full-width">
+                <div class="label">Moon Sign</div>
+                <div class="value highlight" id="moonSign">-</div>
+            </div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Simplified lunar phase calculation
+        function getMoonPhase(date) {
+            // Known new moon reference: January 1, 2000 was a new moon
+            const reference = new Date(2000, 0, 1);
+            const diff = (date - reference) / (1000 * 60 * 60 * 24);
+            const lunation = diff / 29.53058867;
+            const phase = lunation % 1;
+            return phase;
+        }
+
+        function getMoonPhaseName(phase) {
+            if (phase < 0.03 || phase >= 0.97) return { name: 'New Moon', icon: '🌑' };
+            if (phase < 0.22) return { name: 'Waxing Crescent', icon: '🌒' };
+            if (phase < 0.28) return { name: 'First Quarter', icon: '🌓' };
+            if (phase < 0.47) return { name: 'Waxing Gibbous', icon: '🌔' };
+            if (phase < 0.53) return { name: 'Full Moon', icon: '🌕' };
+            if (phase < 0.72) return { name: 'Waning Gibbous', icon: '🌖' };
+            if (phase < 0.78) return { name: 'Last Quarter', icon: '🌗' };
+            return { name: 'Waning Crescent', icon: '🌘' };
+        }
+
+        function getIllumination(phase) {
+            // Simplified illumination calculation
+            return Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2 * 100);
+        }
+
+        function getMoonAge(phase) {
+            return Math.round(phase * 29.53058867);
+        }
+
+        function getMoonSign(date) {
+            // Simplified zodiac calculation based on moon position
+            const signs = [
+                'Aries ♈', 'Taurus ♉', 'Gemini ♊', 'Cancer ♋',
+                'Leo ♌', 'Virgo ♍', 'Libra ♎', 'Scorpio ♏',
+                'Sagittarius ♐', 'Capricorn ♑', 'Aquarius ♒', 'Pisces ♓'
+            ];
+            
+            // Calculate rough moon position
+            const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const moonPosition = (dayOfYear * 13.176) % 360; // Moon moves ~13.176° per day
+            const signIndex = Math.floor(moonPosition / 30) % 12;
+            return signs[signIndex];
+        }
+
+        function calculateNextPhase(date, phaseTarget) {
+            let d = new Date(date);
+            let phase = getMoonPhase(d);
+            let target = phaseTarget;
+            
+            for (let i = 0; i < 100; i++) {
+                d.setDate(d.getDate() + 1);
+                phase = getMoonPhase(d);
+                if (phase >= target - 0.02 && phase <= target + 0.02) {
+                    return d;
+                }
+            }
+            return null;
+        }
+
+        function calculateLunar() {
+            const input = document.getElementById('dateInput').value;
+            if (!input) {
+                showToast('⚠️ Please select a date');
+                return;
+            }
+            
+            const [year, month, day] = input.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            
+            const phase = getMoonPhase(date);
+            const phaseInfo = getMoonPhaseName(phase);
+            const illumination = getIllumination(phase);
+            const moonAge = getMoonAge(phase);
+            const moonSign = getMoonSign(date);
+            
+            // Update phase display
+            document.getElementById('phaseIcon').textContent = phaseInfo.icon;
+            document.getElementById('phaseName').textContent = phaseInfo.name;
+            document.getElementById('phaseDate').textContent = date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Update moon info
+            document.getElementById('illumination').textContent = `${illumination}%`;
+            document.getElementById('moonAge').textContent = `${moonAge} days`;
+            document.getElementById('moonDistance').textContent = `${Math.round(384400 + (Math.random() - 0.5) * 20000).toLocaleString()} km`;
+            
+            // Update moon sign
+            document.getElementById('moonSign').textContent = moonSign;
+            
+            // Calculate next new and full moons
+            const nextNew = calculateNextPhase(date, 0);
+            const nextFull = calculateNextPhase(date, 0.5);
+            
+            document.getElementById('nextNewMoon').textContent = nextNew ? nextNew.toLocaleDateString() : 'N/A';
+            document.getElementById('nextFullMoon').textContent = nextFull ? nextFull.toLocaleDateString() : 'N/A';
+            
+            showToast('🌙 Lunar information updated!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Set default date to today
+        function setDefaultDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('dateInput').value = `${year}-${month}-${day}`;
+        }
+
+        // Auto-calculate on change
+        document.getElementById('dateInput').addEventListener('change', calculateLunar);
+
+        // Initialize
+        setDefaultDate();
+        setTimeout(calculateLunar, 100);
+    </script>
+</body>
+</html>

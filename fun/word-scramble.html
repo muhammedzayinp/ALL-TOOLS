@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Scramble - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .game-container {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .game-container .scrambled-word {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 12px 0;
+        }
+        .game-container .hint-text {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 12px;
+        }
+        .game-container .category-tag {
+            display: inline-block;
+            padding: 4px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .result-display {
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+        .result-display.show {
+            display: block;
+        }
+        .result-display.correct {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .result-display.wrong {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        .stat-item .label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-item .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+        .stat-item .value.correct { color: #10b981; }
+        .stat-item .value.wrong { color: #ef4444; }
+        .stat-item .value.total { color: rgba(255,255,255,0.6); }
+        
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .btn-row .btn, .btn-row .btn-secondary {
+            flex: 1;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔀</span>
+        <h1>Word Scramble</h1>
+        <p class="desc">Unscramble the letters to find the hidden word</p>
+        
+        <div class="game-container" id="gameContainer">
+            <div class="category-tag" id="categoryTag">🌍 Geography</div>
+            <div class="scrambled-word" id="scrambledWord">G N I L O N D</div>
+            <div class="hint-text" id="hintText">Hint: Capital city of the UK</div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="userInput" placeholder="Type your answer..." maxlength="20" autocomplete="off">
+            <button class="btn" onclick="checkAnswer()">Check</button>
+        </div>
+        
+        <div class="result-display" id="resultDisplay"></div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="label">Correct</div>
+                <div class="value correct" id="correctCount">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Wrong</div>
+                <div class="value wrong" id="wrongCount">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Streak</div>
+                <div class="value total" id="streakCount">0</div>
+            </div>
+        </div>
+        
+        <div class="btn-row">
+            <button class="btn-secondary" onclick="newWord()">🔄 New Word</button>
+            <button class="btn-secondary" onclick="showHint()">💡 Hint</button>
+            <button class="btn-secondary" onclick="resetGame()">↺ Reset</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const wordList = [
+            // Geography
+            { word: "LONDON", hint: "Capital city of the UK", category: "🌍 Geography" },
+            { word: "PARIS", hint: "City of love, capital of France", category: "🌍 Geography" },
+            { word: "TOKYO", hint: "Capital of Japan", category: "🌍 Geography" },
+            { word: "BERLIN", hint: "Capital of Germany", category: "🌍 Geography" },
+            { word: "ROME", hint: "The eternal city", category: "🌍 Geography" },
+            { word: "CAIRO", hint: "Capital of Egypt", category: "🌍 Geography" },
+            
+            // Animals
+            { word: "ELEPHANT", hint: "Largest land animal", category: "🐘 Animals" },
+            { word: "GIRAFFE", hint: "Tallest land animal", category: "🐘 Animals" },
+            { word: "DOLPHIN", hint: "Intelligent marine mammal", category: "🐘 Animals" },
+            { word: "PENGUIN", hint: "Flightless bird that swims", category: "🐘 Animals" },
+            { word: "KANGAROO", hint: "Australian animal that jumps", category: "🐘 Animals" },
+            
+            // Food
+            { word: "PIZZA", hint: "Italian flatbread with toppings", category: "🍕 Food" },
+            { word: "BURGER", hint: "Ground meat in a bun", category: "🍕 Food" },
+            { word: "SUSHI", hint: "Japanese rice dish with fish", category: "🍕 Food" },
+            { word: "PASTA", hint: "Italian noodles", category: "🍕 Food" },
+            { word: "TACO", hint: "Mexican folded tortilla", category: "🍕 Food" },
+            
+            // Technology
+            { word: "COMPUTER", hint: "Electronic device for computing", category: "💻 Technology" },
+            { word: "KEYBOARD", hint: "Input device with keys", category: "💻 Technology" },
+            { word: "MONITOR", hint: "Display screen", category: "💻 Technology" },
+            { word: "INTERNET", hint: "Global network of computers", category: "💻 Technology" },
+            { word: "WEBSITE", hint: "Collection of web pages", category: "💻 Technology" },
+            
+            // Science
+            { word: "CHEMISTRY", hint: "Study of matter and its properties", category: "🔬 Science" },
+            { word: "PHYSICS", hint: "Study of matter and energy", category: "🔬 Science" },
+            { word: "BIOLOGY", hint: "Study of living organisms", category: "🔬 Science" },
+            { word: "ASTRONOMY", hint: "Study of celestial objects", category: "🔬 Science" },
+            { word: "GEOLOGY", hint: "Study of the Earth", category: "🔬 Science" }
+        ];
+
+        let currentWord = null;
+        let scrambled = '';
+        let correct = 0;
+        let wrong = 0;
+        let streak = 0;
+        let hintUsed = false;
+        let answered = false;
+
+        function shuffleWord(word) {
+            let arr = word.split('');
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            // Make sure it's different from original
+            if (arr.join('') === word) {
+                return shuffleWord(word);
+            }
+            return arr.join('');
+        }
+
+        function newWord() {
+            const random = wordList[Math.floor(Math.random() * wordList.length)];
+            currentWord = random;
+            scrambled = shuffleWord(random.word);
+            
+            document.getElementById('scrambledWord').textContent = scrambled.split('').join(' ');
+            document.getElementById('categoryTag').textContent = random.category;
+            document.getElementById('hintText').textContent = `Hint: ${random.hint}`;
+            document.getElementById('userInput').value = '';
+            document.getElementById('userInput').placeholder = 'Type your answer...';
+            document.getElementById('resultDisplay').className = 'result-display';
+            document.getElementById('resultDisplay').textContent = '';
+            
+            hintUsed = false;
+            answered = false;
+            document.getElementById('userInput').focus();
+        }
+
+        function checkAnswer() {
+            if (answered) {
+                showToast('⚠️ This word has been answered. Click "New Word" for another!');
+                return;
+            }
+            
+            const input = document.getElementById('userInput').value.trim().toUpperCase();
+            if (!input) {
+                showToast('⚠️ Please type your answer');
+                return;
+            }
+            
+            const resultDisplay = document.getElementById('resultDisplay');
+            
+            if (input === currentWord.word) {
+                resultDisplay.className = 'result-display show correct';
+                resultDisplay.textContent = '✅ Correct! Well done!';
+                correct++;
+                streak++;
+                answered = true;
+                showToast('🎉 Correct!');
+            } else {
+                resultDisplay.className = 'result-display show wrong';
+                resultDisplay.textContent = `❌ Wrong! The correct word was: ${currentWord.word}`;
+                wrong++;
+                streak = 0;
+                answered = true;
+                showToast('❌ Wrong answer!');
+            }
+            
+            updateStats();
+        }
+
+        function showHint() {
+            if (answered) {
+                showToast('⚠️ This word has been answered. Click "New Word" for another!');
+                return;
+            }
+            
+            if (!hintUsed) {
+                hintUsed = true;
+                const hint = currentWord.hint;
+                const letters = currentWord.word.split('');
+                const revealCount = Math.ceil(letters.length / 3);
+                const indices = [];
+                
+                while (indices.length < revealCount) {
+                    const idx = Math.floor(Math.random() * letters.length);
+                    if (!indices.includes(idx)) {
+                        indices.push(idx);
+                    }
+                }
+                
+                let display = letters.map((letter, i) => {
+                    return indices.includes(i) ? letter : '_';
+                });
+                
+                document.getElementById('scrambledWord').textContent = display.join(' ');
+                showToast('💡 Hint revealed! Some letters shown.');
+            } else {
+                showToast('💡 Hint already used for this word!');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('streakCount').textContent = streak;
+        }
+
+        function resetGame() {
+            correct = 0;
+            wrong = 0;
+            streak = 0;
+            updateStats();
+            newWord();
+            showToast('↺ Game reset!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Enter key support
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Initialize
+        window.onload = function() {
+            newWord();
+        };
+    </script>
+</body>
+</html>

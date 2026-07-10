@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Formatter - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            min-height: 120px;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            max-height: 250px;
+            overflow: auto;
+        }
+        .result-container pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        .result-container .error {
+            color: #ef4444;
+        }
+        .result-container .keyword { color: #818cf8; }
+        .result-container .function { color: #34d399; }
+        .result-container .string { color: #fbbf24; }
+        .result-container .number { color: #f472b6; }
+        .result-container .comment { color: #6b7280; font-style: italic; }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .result-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .options-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+        .options-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .options-row input[type="checkbox"] {
+            accent-color: #6366f1;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🗄️</span>
+        <h1>SQL Formatter</h1>
+        <p class="desc">Format and beautify your SQL queries with proper indentation</p>
+        
+        <div class="input-group">
+            <label>Input SQL</label>
+            <textarea id="sqlInput" placeholder="SELECT * FROM users WHERE age > 18 ORDER BY name"></textarea>
+        </div>
+        
+        <div class="options-row">
+            <label>
+                <input type="checkbox" id="uppercaseKeywords" checked>
+                Uppercase Keywords
+            </label>
+            <label>
+                <input type="checkbox" id="indentWithTabs">
+                Indent with Tabs
+            </label>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="formatSQL()">✨ Format</button>
+            <button class="btn btn-secondary" onclick="minifySQL()">📦 Minify</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="result-wrapper">
+            <div class="result-container" id="resultContainer">
+                <pre id="resultOutput"><span style="color: rgba(255,255,255,0.3);">Formatted SQL will appear here...</span></pre>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function formatSQL() {
+            const input = document.getElementById('sqlInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter some SQL');
+                return;
+            }
+            
+            try {
+                const uppercase = document.getElementById('uppercaseKeywords').checked;
+                const useTabs = document.getElementById('indentWithTabs').checked;
+                const indent = useTabs ? '\t' : '  ';
+                
+                let formatted = formatSQLQuery(input, uppercase, indent);
+                document.getElementById('resultOutput').innerHTML = formatted;
+                document.getElementById('resultOutput').className = '';
+                showToast('✅ SQL formatted successfully!');
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Error formatting SQL');
+            }
+        }
+
+        function minifySQL() {
+            const input = document.getElementById('sqlInput').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter some SQL');
+                return;
+            }
+            
+            try {
+                let minified = input.replace(/\s+/g, ' ').trim();
+                document.getElementById('resultOutput').innerHTML = minified;
+                document.getElementById('resultOutput').className = '';
+                showToast('✅ SQL minified successfully!');
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Error minifying SQL');
+            }
+        }
+
+        function formatSQLQuery(sql, uppercase, indent) {
+            // Simple SQL formatter
+            let formatted = sql;
+            
+            // Remove extra spaces
+            formatted = formatted.replace(/\s+/g, ' ');
+            
+            // Split by keywords that should be on new lines
+            const keywords = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'HAVING', 'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'UNION', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'SET', 'VALUES', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE'];
+            
+            // Add newlines before keywords
+            keywords.forEach(keyword => {
+                const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                formatted = formatted.replace(regex, `\n${keyword}`);
+            });
+            
+            // Split by commas in SELECT clause
+            const lines = formatted.split('\n');
+            let result = [];
+            let indentLevel = 0;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // Detect if line contains a major keyword
+                const isMajorKeyword = keywords.some(kw => line.toUpperCase().includes(kw));
+                
+                if (isMajorKeyword) {
+                    // Check if it's a closing keyword
+                    if (line.toUpperCase().includes('WHERE') || line.toUpperCase().includes('ORDER BY') || line.toUpperCase().includes('GROUP BY')) {
+                        // Keep at same level
+                    } else {
+                        // Opening keyword
+                    }
+                }
+                
+                // Handle SELECT columns - split by comma
+                if (line.toUpperCase().startsWith('SELECT')) {
+                    result.push(line);
+                    // Add subsequent lines for columns
+                    let remaining = line.substring(line.toUpperCase().indexOf('SELECT') + 6).trim();
+                    if (remaining && !remaining.includes('FROM')) {
+                        // Just add the SELECT line, let the loop handle columns
+                    }
+                } else if (line.includes(',')) {
+                    // Split columns by comma
+                    const parts = line.split(',');
+                    parts.forEach((part, idx) => {
+                        if (idx === 0) {
+                            result.push(indent + part.trim());
+                        } else {
+                            result.push(indent + part.trim());
+                        }
+                    });
+                } else {
+                    result.push(line);
+                }
+            }
+            
+            // Clean up
+            let final = result.join('\n');
+            
+            // Remove extra blank lines
+            final = final.replace(/\n\s*\n/g, '\n');
+            
+            // Uppercase keywords if selected
+            if (uppercase) {
+                keywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    final = final.replace(regex, keyword.toUpperCase());
+                });
+            }
+            
+            // Fix formatting for SELECT with multiple columns
+            final = final.replace(/SELECT\s+/g, 'SELECT ');
+            final = final.replace(/FROM\s+/g, '\nFROM ');
+            final = final.replace(/WHERE\s+/g, '\nWHERE ');
+            final = final.replace(/ORDER BY\s+/g, '\nORDER BY ');
+            final = final.replace(/GROUP BY\s+/g, '\nGROUP BY ');
+            final = final.replace(/JOIN\s+/g, '\nJOIN ');
+            
+            // Add indentation for SELECT columns
+            const lines2 = final.split('\n');
+            const formattedLines = lines2.map((line, index) => {
+                const trimmed = line.trim();
+                if (index === 0 || trimmed.toUpperCase().startsWith('SELECT')) {
+                    return line;
+                } else if (trimmed.toUpperCase().startsWith('FROM') || 
+                           trimmed.toUpperCase().startsWith('WHERE') || 
+                           trimmed.toUpperCase().startsWith('ORDER') || 
+                           trimmed.toUpperCase().startsWith('GROUP') ||
+                           trimmed.toUpperCase().startsWith('JOIN')) {
+                    return line;
+                } else {
+                    return indent + line.trim();
+                }
+            });
+            
+            final = formattedLines.join('\n');
+            
+            return final;
+        }
+
+        function clearAll() {
+            document.getElementById('sqlInput').value = '';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Formatted SQL will appear here...</span>';
+            document.getElementById('resultOutput').className = '';
+            showToast('🗑️ Cleared');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultOutput').textContent;
+            if (!text || text.includes('will appear here')) {
+                showToast('⚠️ Nothing to copy');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied to clipboard!');
+            }).catch(() => {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                const el = document.getElementById('resultOutput');
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('copy');
+                showToast('✅ Copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Load sample data on load
+        window.onload = function() {
+            const sample = `SELECT u.id, u.name, u.email, o.order_date, o.total
+FROM users u
+JOIN orders o ON u.id = o.user_id
+WHERE u.age > 18 AND u.active = true
+ORDER BY o.order_date DESC
+LIMIT 10`;
+            document.getElementById('sqlInput').value = sample;
+            formatSQL();
+        };
+    </script>
+</body>
+</html>

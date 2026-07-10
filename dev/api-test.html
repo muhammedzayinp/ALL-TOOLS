@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        .input-group textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            min-height: 80px;
+            resize: vertical;
+        }
+        .input-group .method-selector {
+            display: flex;
+            gap: 8px;
+        }
+        .input-group .method-selector button {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .input-group .method-selector button.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: #6366f1;
+            color: #fff;
+        }
+        .input-group .method-selector button:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .input-group .method-selector button.active:hover {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+        }
+        .input-group .method-selector button.get { border-color: #34d399; }
+        .input-group .method-selector button.get.active { background: #34d399; border-color: #34d399; }
+        .input-group .method-selector button.post { border-color: #818cf8; }
+        .input-group .method-selector button.post.active { background: #818cf8; border-color: #818cf8; }
+        .input-group .method-selector button.put { border-color: #fbbf24; }
+        .input-group .method-selector button.put.active { background: #fbbf24; border-color: #fbbf24; }
+        .input-group .method-selector button.delete { border-color: #ef4444; }
+        .input-group .method-selector button.delete.active { background: #ef4444; border-color: #ef4444; }
+        .input-group .method-selector button.patch { border-color: #f472b6; }
+        .input-group .method-selector button.patch.active { background: #f472b6; border-color: #f472b6; }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            max-height: 350px;
+            overflow: auto;
+        }
+        .result-container pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        .result-container .error {
+            color: #ef4444;
+        }
+        .result-container .success {
+            color: #10b981;
+        }
+        .result-container .status-line {
+            font-weight: 700;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .result-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 600px) {
+            .row-2col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🌐</span>
+        <h1>API Tester</h1>
+        <p class="desc">Test and debug API endpoints with custom headers and body</p>
+        
+        <div class="input-group">
+            <label>Method</label>
+            <div class="method-selector" id="methodSelector">
+                <button class="get active" data-method="GET">GET</button>
+                <button class="post" data-method="POST">POST</button>
+                <button class="put" data-method="PUT">PUT</button>
+                <button class="delete" data-method="DELETE">DELETE</button>
+                <button class="patch" data-method="PATCH">PATCH</button>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>URL</label>
+            <input type="text" id="apiUrl" placeholder="https://api.example.com/endpoint" value="https://jsonplaceholder.typicode.com/posts/1">
+        </div>
+        
+        <div class="row-2col">
+            <div class="input-group">
+                <label>Headers (JSON format)</label>
+                <textarea id="apiHeaders" placeholder='{"Content-Type": "application/json"}' style="min-height:60px;">{"Content-Type": "application/json"}</textarea>
+            </div>
+            <div class="input-group">
+                <label>Body (JSON format)</label>
+                <textarea id="apiBody" placeholder='{"key": "value"}' style="min-height:60px;">{"title": "foo", "body": "bar", "userId": 1}</textarea>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="sendRequest()" id="sendBtn">🚀 Send Request</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="result-wrapper">
+            <div class="result-container" id="resultContainer">
+                <pre id="resultOutput"><span style="color: rgba(255,255,255,0.3);">Response will appear here...</span></pre>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let selectedMethod = 'GET';
+
+        // Method selector
+        document.querySelectorAll('.method-selector button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.method-selector button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedMethod = this.dataset.method;
+            });
+        });
+
+        function sendRequest() {
+            const url = document.getElementById('apiUrl').value.trim();
+            const headersText = document.getElementById('apiHeaders').value.trim();
+            const bodyText = document.getElementById('apiBody').value.trim();
+            
+            if (!url) {
+                showToast('⚠️ Please enter a URL');
+                return;
+            }
+            
+            // Parse headers
+            let headers = {};
+            if (headersText) {
+                try {
+                    headers = JSON.parse(headersText);
+                } catch (e) {
+                    showToast('⚠️ Invalid headers JSON');
+                    return;
+                }
+            }
+            
+            // Parse body
+            let body = null;
+            if (bodyText && (selectedMethod === 'POST' || selectedMethod === 'PUT' || selectedMethod === 'PATCH')) {
+                try {
+                    body = JSON.parse(bodyText);
+                } catch (e) {
+                    showToast('⚠️ Invalid body JSON');
+                    return;
+                }
+            }
+            
+            // Show loading
+            const sendBtn = document.getElementById('sendBtn');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<span class="loading"></span> Sending...';
+            sendBtn.disabled = true;
+            
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">⏳ Sending request...</span>';
+            
+            // Build request options
+            const options = {
+                method: selectedMethod,
+                headers: headers
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            // Send request
+            fetch(url, options)
+                .then(async response => {
+                    const text = await response.text();
+                    let formattedResponse = '';
+                    
+                    // Status line
+                    const statusColor = response.ok ? '#10b981' : '#ef4444';
+                    formattedResponse += `<span class="status-line" style="color: ${statusColor}">`;
+                    formattedResponse += `${response.status} ${response.statusText}`;
+                    formattedResponse += ` (${response.ok ? '✅ Success' : '❌ Error'})`;
+                    formattedResponse += `</span>\n\n`;
+                    
+                    // Response headers
+                    formattedResponse += `<span style="color: #818cf8; font-weight: 600;">📋 Response Headers</span>\n`;
+                    response.headers.forEach((value, key) => {
+                        formattedResponse += `${key}: ${value}\n`;
+                    });
+                    formattedResponse += `\n`;
+                    
+                    // Response body
+                    formattedResponse += `<span style="color: #818cf8; font-weight: 600;">📦 Response Body</span>\n`;
+                    
+                    // Try to format JSON
+                    try {
+                        const json = JSON.parse(text);
+                        formattedResponse += JSON.stringify(json, null, 2);
+                    } catch {
+                        formattedResponse += text || '(empty response)';
+                    }
+                    
+                    document.getElementById('resultOutput').innerHTML = formattedResponse;
+                    document.getElementById('resultOutput').className = 'success';
+                    showToast(`✅ ${response.status} ${response.statusText}`);
+                })
+                .catch(error => {
+                    document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                    document.getElementById('resultOutput').className = 'error';
+                    showToast('❌ Request failed');
+                })
+                .finally(() => {
+                    sendBtn.innerHTML = originalText;
+                    sendBtn.disabled = false;
+                });
+        }
+
+        function clearAll() {
+            document.getElementById('apiUrl').value = '';
+            document.getElementById('apiHeaders').value = '{"Content-Type": "application/json"}';
+            document.getElementById('apiBody').value = '{"title": "foo", "body": "bar", "userId": 1}';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Response will appear here...</span>';
+            document.getElementById('resultOutput').className = '';
+            showToast('🗑️ Cleared');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultOutput').textContent;
+            if (!text || text.includes('will appear here') || text.includes('Error')) {
+                showToast('⚠️ Nothing to copy');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied to clipboard!');
+            }).catch(() => {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                const el = document.getElementById('resultOutput');
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('copy');
+                showToast('✅ Copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>

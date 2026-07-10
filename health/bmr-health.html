@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMR Calculator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .input-group select option {
+            background: #1a1d2e;
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .result-container {
+            margin: 16px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-align: center;
+        }
+        .result-container .bmr-value {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-container .bmr-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+        }
+        
+        .tdee-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .tdee-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        .tdee-item .label {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tdee-item .value {
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+            margin-top: 2px;
+        }
+        
+        .info-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.6;
+        }
+        .info-box strong {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔥</span>
+        <h1>BMR Calculator</h1>
+        <p class="desc">Calculate your Basal Metabolic Rate and daily calorie needs</p>
+        
+        <div class="input-group">
+            <label>Gender</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female" selected>Female</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>Age (years)</label>
+            <input type="number" id="age" value="30" min="1" max="120">
+        </div>
+        
+        <div class="input-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" value="70" step="0.1" min="1">
+        </div>
+        
+        <div class="input-group">
+            <label>Height (cm)</label>
+            <input type="number" id="height" value="175" step="0.1" min="1">
+        </div>
+        
+        <div class="input-group">
+            <label>Activity Level</label>
+            <select id="activity">
+                <option value="1.2">Sedentary (Little to no exercise)</option>
+                <option value="1.375" selected>Lightly Active (1-3 days/week)</option>
+                <option value="1.55">Moderately Active (3-5 days/week)</option>
+                <option value="1.725">Very Active (6-7 days/week)</option>
+                <option value="1.9">Extra Active (Athlete/Physical job)</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="calculateBMR()">📊 Calculate BMR</button>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="bmr-value" id="bmrValue">1,350</div>
+            <div class="bmr-label">Basal Metabolic Rate (Calories/Day)</div>
+            
+            <div class="tdee-grid">
+                <div class="tdee-item">
+                    <div class="label">Sedentary</div>
+                    <div class="value" id="sedentary">-</div>
+                </div>
+                <div class="tdee-item">
+                    <div class="label">Lightly Active</div>
+                    <div class="value" id="lightActive">-</div>
+                </div>
+                <div class="tdee-item">
+                    <div class="label">Moderately Active</div>
+                    <div class="value" id="modActive">-</div>
+                </div>
+                <div class="tdee-item">
+                    <div class="label">Very Active</div>
+                    <div class="value" id="veryActive">-</div>
+                </div>
+            </div>
+            
+            <div class="info-box" id="infoBox">
+                <strong>💡 What is BMR?</strong><br>
+                BMR is the number of calories your body burns at rest. Your total daily energy expenditure (TDEE) is your BMR multiplied by your activity level.
+            </div>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function calculateBMR() {
+            const gender = document.getElementById('gender').value;
+            const age = parseFloat(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+            
+            if (!age || !weight || !height || age <= 0 || weight <= 0 || height <= 0) {
+                showToast('⚠️ Please enter valid values');
+                return;
+            }
+            
+            // Mifflin-St Jeor Equation
+            let bmr;
+            if (gender === 'male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            }
+            
+            bmr = Math.round(bmr);
+            
+            // Calculate TDEE for all activity levels
+            const activityLevels = [1.2, 1.375, 1.55, 1.725, 1.9];
+            const labels = ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extra Active'];
+            const tdeeValues = activityLevels.map(level => Math.round(bmr * level));
+            
+            // Update BMR
+            document.getElementById('bmrValue').textContent = bmr.toLocaleString();
+            
+            // Update TDEE values
+            document.getElementById('sedentary').textContent = tdeeValues[0].toLocaleString();
+            document.getElementById('lightActive').textContent = tdeeValues[1].toLocaleString();
+            document.getElementById('modActive').textContent = tdeeValues[2].toLocaleString();
+            document.getElementById('veryActive').textContent = tdeeValues[3].toLocaleString();
+            
+            // Update info box with current TDEE
+            const currentTDEE = Math.round(bmr * activity);
+            const infoBox = document.getElementById('infoBox');
+            infoBox.innerHTML = `
+                <strong>💡 Your Daily Calorie Needs</strong><br>
+                Based on your activity level, you need about <strong style="color:#6366f1;">${currentTDEE.toLocaleString()} calories</strong> per day to maintain your current weight.
+                <br><br>
+                <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);">
+                    BMR: ${bmr.toLocaleString()} | Activity Factor: ${activity}
+                </span>
+            `;
+            
+            showToast('✅ BMR calculated successfully!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Auto-calculate on input
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', calculateBMR);
+            input.addEventListener('change', calculateBMR);
+        });
+
+        // Initialize
+        window.onload = function() {
+            calculateBMR();
+        };
+    </script>
+</body>
+</html>

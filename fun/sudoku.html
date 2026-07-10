@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            margin: 16px 0;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .cell:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        .cell.selected {
+            background: rgba(99,102,241,0.2);
+            border-color: rgba(99,102,241,0.3);
+        }
+        .cell.given {
+            color: rgba(255,255,255,0.6);
+            font-weight: 700;
+        }
+        .cell.user {
+            color: #6366f1;
+        }
+        .cell.highlight {
+            background: rgba(255,255,255,0.05);
+        }
+        .cell.error {
+            color: #ef4444;
+            animation: shake 0.3s ease;
+        }
+        .cell.solved {
+            color: #10b981;
+        }
+        .cell.related {
+            background: rgba(99,102,241,0.05);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        /* 3x3 box borders */
+        .cell:nth-child(9n+3) { border-right: 2px solid rgba(255,255,255,0.15); }
+        .cell:nth-child(9n+6) { border-right: 2px solid rgba(255,255,255,0.15); }
+        .cell:nth-child(n+19):nth-child(-n+27) { border-bottom: 2px solid rgba(255,255,255,0.15); }
+        .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid rgba(255,255,255,0.15); }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            margin: 12px 0;
+        }
+        .num-btn {
+            padding: 10px 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .num-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .num-btn:active {
+            transform: scale(0.95);
+        }
+        .num-btn.erase {
+            color: #ef4444;
+            font-size: 0.8rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .btn {
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn-secondary {
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            margin: 8px 0;
+        }
+        .status.win {
+            color: #10b981;
+            font-weight: 700;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🧩</span>
+        <h1>Sudoku</h1>
+        <p class="desc">Fill the grid so every row, column, and 3x3 box contains 1-9</p>
+        
+        <div class="sudoku-grid" id="sudokuGrid"></div>
+        
+        <div class="controls" id="numberButtons">
+            <button class="num-btn" onclick="insertNumber(1)">1</button>
+            <button class="num-btn" onclick="insertNumber(2)">2</button>
+            <button class="num-btn" onclick="insertNumber(3)">3</button>
+            <button class="num-btn" onclick="insertNumber(4)">4</button>
+            <button class="num-btn" onclick="insertNumber(5)">5</button>
+            <button class="num-btn" onclick="insertNumber(6)">6</button>
+            <button class="num-btn" onclick="insertNumber(7)">7</button>
+            <button class="num-btn" onclick="insertNumber(8)">8</button>
+            <button class="num-btn" onclick="insertNumber(9)">9</button>
+        </div>
+        
+        <div class="controls">
+            <button class="num-btn erase" onclick="eraseNumber()">✕ Erase</button>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn" onclick="newGame()">🔄 New</button>
+            <button class="btn-secondary" onclick="checkSolution()">✓ Check</button>
+            <button class="btn-secondary" onclick="hint()">💡 Hint</button>
+        </div>
+        
+        <div class="status" id="status">Select a cell, then click a number</div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let board = [];
+        let solution = [];
+        let given = [];
+        let selectedRow = -1;
+        let selectedCol = -1;
+        let gameBoard = [];
+
+        // Pre-generated puzzle (easy)
+        const puzzle = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ];
+
+        const solutionPuzzle = [
+            [5, 3, 4, 6, 7, 8, 9, 1, 2],
+            [6, 7, 2, 1, 9, 5, 3, 4, 8],
+            [1, 9, 8, 3, 4, 2, 5, 6, 7],
+            [8, 5, 9, 7, 6, 1, 4, 2, 3],
+            [4, 2, 6, 8, 5, 3, 7, 9, 1],
+            [7, 1, 3, 9, 2, 4, 8, 5, 6],
+            [9, 6, 1, 5, 3, 7, 2, 8, 4],
+            [2, 8, 7, 4, 1, 9, 6, 3, 5],
+            [3, 4, 5, 2, 8, 6, 1, 7, 9]
+        ];
+
+        function initGame() {
+            board = puzzle.map(row => [...row]);
+            solution = solutionPuzzle.map(row => [...row]);
+            given = board.map(row => row.map(val => val !== 0));
+            selectedRow = -1;
+            selectedCol = -1;
+            renderGrid();
+            document.getElementById('status').textContent = 'Select a cell, then click a number';
+            document.getElementById('status').className = 'status';
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('sudokuGrid');
+            grid.innerHTML = '';
+            
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    const value = board[r][c];
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        if (given[r][c]) {
+                            cell.classList.add('given');
+                        } else {
+                            cell.classList.add('user');
+                        }
+                    }
+                    
+                    if (selectedRow === r && selectedCol === c) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    // Highlight related cells
+                    if (selectedRow !== -1 && selectedCol !== -1) {
+                        if (r === selectedRow || c === selectedCol || 
+                            (Math.floor(r/3) === Math.floor(selectedRow/3) && 
+                             Math.floor(c/3) === Math.floor(selectedCol/3))) {
+                            if (!(r === selectedRow && c === selectedCol)) {
+                                cell.classList.add('related');
+                            }
+                        }
+                    }
+                    
+                    cell.addEventListener('click', () => selectCell(r, c));
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function selectCell(row, col) {
+            if (given[row][col]) {
+                showToast('⚠️ This cell is pre-filled');
+                return;
+            }
+            selectedRow = row;
+            selectedCol = col;
+            renderGrid();
+            document.getElementById('status').textContent = `Selected (${row+1}, ${col+1})`;
+        }
+
+        function insertNumber(num) {
+            if (selectedRow === -1 || selectedCol === -1) {
+                showToast('⚠️ Please select a cell first');
+                return;
+            }
+            if (given[selectedRow][selectedCol]) {
+                showToast('⚠️ This cell is pre-filled');
+                return;
+            }
+            
+            board[selectedRow][selectedCol] = num;
+            renderGrid();
+            
+            // Check if complete
+            if (isBoardComplete()) {
+                document.getElementById('status').textContent = '🎉 Congratulations! You solved it!';
+                document.getElementById('status').className = 'status win';
+                showToast('🎉 You solved the puzzle!');
+            }
+        }
+
+        function eraseNumber() {
+            if (selectedRow === -1 || selectedCol === -1) {
+                showToast('⚠️ Please select a cell first');
+                return;
+            }
+            if (given[selectedRow][selectedCol]) {
+                showToast('⚠️ Cannot erase pre-filled cell');
+                return;
+            }
+            
+            board[selectedRow][selectedCol] = 0;
+            renderGrid();
+        }
+
+        function isBoardComplete() {
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (board[r][c] === 0) return false;
+                }
+            }
+            return true;
+        }
+
+        function checkSolution() {
+            let errors = 0;
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (!given[r][c] && board[r][c] !== 0 && board[r][c] !== solution[r][c]) {
+                        errors++;
+                        const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                        cell.classList.add('error');
+                        setTimeout(() => cell.classList.remove('error'), 500);
+                    }
+                }
+            }
+            
+            if (errors === 0) {
+                if (isBoardComplete()) {
+                    showToast('🎉 Perfect! All cells are correct!');
+                } else {
+                    showToast('✅ All filled cells are correct! Keep going!');
+                }
+            } else {
+                showToast(`❌ Found ${errors} incorrect cell(s)`);
+            }
+        }
+
+        function hint() {
+            if (selectedRow === -1 || selectedCol === -1) {
+                showToast('⚠️ Select a cell first');
+                return;
+            }
+            if (given[selectedRow][selectedCol]) {
+                showToast('⚠️ This cell is pre-filled');
+                return;
+            }
+            
+            board[selectedRow][selectedCol] = solution[selectedRow][selectedCol];
+            renderGrid();
+            showToast(`💡 Hint: ${solution[selectedRow][selectedCol]} at (${selectedRow+1}, ${selectedCol+1})`);
+        }
+
+        function newGame() {
+            initGame();
+            showToast('🔄 New game started!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            
+            if (e.key >= '1' && e.key <= '9') {
+                insertNumber(parseInt(e.key));
+            } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                eraseNumber();
+            } else if (e.key === 'h' || e.key === 'H') {
+                hint();
+            } else if (e.key === 'c' || e.key === 'C') {
+                checkSolution();
+            } else if (e.key === 'n' || e.key === 'N') {
+                newGame();
+            }
+        });
+
+        // Initialize
+        initGame();
+    </script>
+</body>
+</html>

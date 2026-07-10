@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Decode - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 4px; 
+        }
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .result-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow: auto;
+        }
+        .result-container pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+        }
+        .result-container .error {
+            color: #ef4444;
+        }
+        .result-container .success {
+            color: #10b981;
+        }
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+        .result-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .mode-toggle button {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        .mode-toggle button.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: #6366f1;
+            color: #fff;
+        }
+        .mode-toggle button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .mode-toggle button.active:hover {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+        }
+        .download-btn {
+            margin-top: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .download-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🔓</span>
+        <h1>Base64 Decode</h1>
+        <p class="desc">Decode Base64 encoded text or data back to its original format</p>
+        
+        <div class="mode-toggle">
+            <button class="active" id="textMode" onclick="switchMode('text')">📝 Text</button>
+            <button id="binaryMode" onclick="switchMode('binary')">💾 Binary</button>
+        </div>
+        
+        <div class="input-group">
+            <label>Base64 Input</label>
+            <textarea id="base64Input" placeholder="Enter Base64 encoded text to decode...">SGVsbG8gV29ybGQh</textarea>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="decodeBase64()">🔓 Decode</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+        
+        <div class="result-wrapper">
+            <div class="result-container" id="resultContainer">
+                <pre id="resultOutput"><span style="color: rgba(255,255,255,0.3);">Decoded text will appear here...</span></pre>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+        </div>
+        
+        <div id="downloadArea" style="display:none; text-align:center;">
+            <button class="download-btn" onclick="downloadDecoded()">💾 Download Decoded File</button>
+        </div>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentMode = 'text';
+        let decodedBinaryData = null;
+        let decodedFileName = 'decoded.bin';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('textMode').className = mode === 'text' ? 'active' : '';
+            document.getElementById('binaryMode').className = mode === 'binary' ? 'active' : '';
+            document.getElementById('downloadArea').style.display = mode === 'binary' ? 'block' : 'none';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Decoded text will appear here...</span>';
+            decodedBinaryData = null;
+        }
+
+        function decodeBase64() {
+            const input = document.getElementById('base64Input').value.trim();
+            if (!input) {
+                showToast('⚠️ Please enter Base64 encoded text');
+                return;
+            }
+            
+            try {
+                if (currentMode === 'text') {
+                    // Decode as text
+                    const decoded = decodeURIComponent(escape(atob(input)));
+                    document.getElementById('resultOutput').innerHTML = decoded;
+                    document.getElementById('resultOutput').className = 'success';
+                    showToast('✅ Decoded successfully!');
+                } else {
+                    // Decode as binary
+                    const binaryString = atob(input);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    decodedBinaryData = bytes;
+                    
+                    // Try to detect file type from magic bytes
+                    const magic = bytes.slice(0, 4);
+                    let ext = 'bin';
+                    let type = 'Binary';
+                    
+                    // Common file signatures
+                    const signatures = [
+                        { magic: [0x89, 0x50, 0x4E, 0x47], ext: 'png', name: 'PNG Image' },
+                        { magic: [0xFF, 0xD8, 0xFF], ext: 'jpg', name: 'JPEG Image' },
+                        { magic: [0x47, 0x49, 0x46, 0x38], ext: 'gif', name: 'GIF Image' },
+                        { magic: [0x25, 0x50, 0x44, 0x46], ext: 'pdf', name: 'PDF Document' },
+                        { magic: [0x50, 0x4B, 0x03, 0x04], ext: 'zip', name: 'ZIP Archive' },
+                        { magic: [0x52, 0x61, 0x72, 0x21], ext: 'rar', name: 'RAR Archive' },
+                        { magic: [0x7F, 0x45, 0x4C, 0x46], ext: 'elf', name: 'ELF Executable' },
+                        { magic: [0x4D, 0x5A], ext: 'exe', name: 'Windows Executable' }
+                    ];
+                    
+                    for (let sig of signatures) {
+                        let match = true;
+                        for (let j = 0; j < sig.magic.length && j < bytes.length; j++) {
+                            if (bytes[j] !== sig.magic[j]) {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if (match) {
+                            ext = sig.ext;
+                            type = sig.name;
+                            break;
+                        }
+                    }
+                    
+                    decodedFileName = `decoded.${ext}`;
+                    
+                    // Show preview (first 200 bytes as hex)
+                    let preview = `📎 ${type} file (${bytes.length} bytes)\n\n`;
+                    preview += 'Hex preview (first 64 bytes):\n';
+                    const hexBytes = bytes.slice(0, 64);
+                    let hexStr = '';
+                    for (let i = 0; i < hexBytes.length; i++) {
+                        hexStr += hexBytes[i].toString(16).padStart(2, '0') + ' ';
+                        if ((i + 1) % 16 === 0) hexStr += '\n';
+                    }
+                    preview += hexStr;
+                    if (bytes.length > 64) preview += '\n...';
+                    
+                    document.getElementById('resultOutput').innerHTML = preview;
+                    document.getElementById('resultOutput').className = 'success';
+                    document.getElementById('downloadArea').style.display = 'block';
+                    showToast('✅ Binary data decoded successfully!');
+                }
+            } catch (e) {
+                document.getElementById('resultOutput').innerHTML = `<span class="error">❌ Invalid Base64: ${e.message}</span>`;
+                document.getElementById('resultOutput').className = 'error';
+                showToast('❌ Invalid Base64 input');
+            }
+        }
+
+        function downloadDecoded() {
+            if (!decodedBinaryData) {
+                showToast('⚠️ No decoded data to download');
+                return;
+            }
+            
+            const blob = new Blob([decodedBinaryData]);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = decodedFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('✅ File downloaded!');
+        }
+
+        function clearAll() {
+            document.getElementById('base64Input').value = '';
+            document.getElementById('resultOutput').innerHTML = '<span style="color: rgba(255,255,255,0.3);">Decoded text will appear here...</span>';
+            document.getElementById('resultOutput').className = '';
+            document.getElementById('downloadArea').style.display = 'none';
+            decodedBinaryData = null;
+            showToast('🗑️ Cleared');
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultOutput').textContent;
+            if (!text || text.includes('will appear here') || text.includes('Error')) {
+                showToast('⚠️ Nothing to copy');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Copied to clipboard!');
+            }).catch(() => {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                const el = document.getElementById('resultOutput');
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('copy');
+                showToast('✅ Copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onload = function() {
+            // Sample base64 already set
+            decodeBase64();
+        };
+    </script>
+</body>
+</html>

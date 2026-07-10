@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Time Test - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .test-area {
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 40px 20px;
+            margin: 16px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .test-area:hover {
+            border-color: rgba(255,255,255,0.1);
+        }
+        .test-area.waiting {
+            background: rgba(99,102,241,0.05);
+            border-color: rgba(99,102,241,0.2);
+        }
+        .test-area.ready {
+            background: rgba(16,185,129,0.05);
+            border-color: rgba(16,185,129,0.3);
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+        .test-area.ready .status-text {
+            color: #10b981;
+        }
+        .test-area.clicked {
+            background: rgba(239,68,68,0.05);
+            border-color: rgba(239,68,68,0.2);
+        }
+        .test-area.clicked .status-text {
+            color: #ef4444;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+        }
+        .test-area .status-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+        .test-area .status-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+        }
+        .test-area .status-sub {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        .stat-item .label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: rgba(255,255,255,0.8);
+        }
+        .stat-item .value.highlight {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            min-height: 40px;
+            justify-content: center;
+        }
+        .history-item {
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .history-empty {
+            color: rgba(255,255,255,0.2);
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">⚡</span>
+        <h1>Reaction Time Test</h1>
+        <p class="desc">Test your reflexes. Click when the screen turns green!</p>
+        
+        <div class="test-area waiting" id="testArea" onclick="handleClick()">
+            <div class="status-icon" id="statusIcon">🟦</div>
+            <div class="status-text" id="statusText">Click to Start</div>
+            <div class="status-sub" id="statusSub">Wait for green before clicking</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="label">Last</div>
+                <div class="value" id="lastTime">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Average</div>
+                <div class="value highlight" id="avgTime">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Best</div>
+                <div class="value" id="bestTime">-</div>
+            </div>
+        </div>
+        
+        <div class="history-grid" id="historyGrid">
+            <span class="history-empty">No reactions recorded yet</span>
+        </div>
+        
+        <button class="btn" onclick="resetTest()">🔄 Reset</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let state = 'waiting'; // waiting, ready, clicked
+        let timeoutId = null;
+        let startTime = null;
+        let reactionTimes = [];
+        let bestTime = Infinity;
+        let lastTime = null;
+
+        function handleClick() {
+            if (state === 'waiting') {
+                // Start the test
+                startTest();
+            } else if (state === 'ready') {
+                // Clicked on green - success!
+                const reactionTime = Date.now() - startTime;
+                recordReaction(reactionTime);
+                
+                state = 'clicked';
+                updateDisplay();
+                
+                // Reset after a moment
+                setTimeout(() => {
+                    state = 'waiting';
+                    updateDisplay();
+                }, 1000);
+            } else if (state === 'clicked') {
+                // Already clicked, do nothing
+                showToast('⚠️ Wait for the next round!');
+            }
+        }
+
+        function startTest() {
+            state = 'waiting';
+            updateDisplay();
+            
+            // Random delay between 1-5 seconds
+            const delay = Math.floor(Math.random() * 4000) + 1000;
+            
+            // Clear any existing timeout
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            
+            timeoutId = setTimeout(() => {
+                if (state === 'waiting') {
+                    state = 'ready';
+                    startTime = Date.now();
+                    updateDisplay();
+                }
+            }, delay);
+            
+            showToast('⏳ Wait for the green...');
+        }
+
+        function recordReaction(time) {
+            reactionTimes.push(time);
+            lastTime = time;
+            if (time < bestTime) {
+                bestTime = time;
+            }
+            
+            // Update stats
+            updateStats();
+            
+            // Update history
+            renderHistory();
+            
+            // Show feedback
+            let message = '';
+            if (time < 150) {
+                message = '⚡ Lightning fast!';
+            } else if (time < 200) {
+                message = '🚀 Very fast!';
+            } else if (time < 250) {
+                message = '👍 Good!';
+            } else if (time < 300) {
+                message = '👌 Decent';
+            } else {
+                message = '🐢 Practice more!';
+            }
+            showToast(`${time}ms - ${message}`);
+        }
+
+        function updateDisplay() {
+            const area = document.getElementById('testArea');
+            const icon = document.getElementById('statusIcon');
+            const text = document.getElementById('statusText');
+            const sub = document.getElementById('statusSub');
+            
+            area.className = 'test-area';
+            
+            if (state === 'waiting') {
+                area.classList.add('waiting');
+                icon.textContent = '🟦';
+                text.textContent = 'Click to Start';
+                sub.textContent = 'Wait for green before clicking';
+            } else if (state === 'ready') {
+                area.classList.add('ready');
+                icon.textContent = '🟩';
+                text.textContent = 'CLICK NOW!';
+                sub.textContent = 'Click as fast as you can!';
+            } else if (state === 'clicked') {
+                area.classList.add('clicked');
+                icon.textContent = '✅';
+                text.textContent = 'Good!';
+                sub.textContent = `Your reaction: ${lastTime || 0}ms`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('lastTime').textContent = lastTime ? `${lastTime}ms` : '-';
+            
+            if (reactionTimes.length > 0) {
+                const avg = Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length);
+                document.getElementById('avgTime').textContent = `${avg}ms`;
+                document.getElementById('bestTime').textContent = bestTime === Infinity ? '-' : `${bestTime}ms`;
+            } else {
+                document.getElementById('avgTime').textContent = '-';
+                document.getElementById('bestTime').textContent = '-';
+            }
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            
+            if (reactionTimes.length === 0) {
+                grid.innerHTML = '<span class="history-empty">No reactions recorded yet</span>';
+                return;
+            }
+            
+            // Show last 10 in reverse order
+            const recent = [...reactionTimes].reverse().slice(0, 10);
+            recent.forEach(time => {
+                const item = document.createElement('span');
+                item.className = 'history-item';
+                item.textContent = `${time}ms`;
+                grid.appendChild(item);
+            });
+        }
+
+        function resetTest() {
+            // Clear timeout
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            
+            reactionTimes = [];
+            bestTime = Infinity;
+            lastTime = null;
+            state = 'waiting';
+            
+            updateDisplay();
+            updateStats();
+            renderHistory();
+            
+            showToast('🔄 Reset complete. Ready for test!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Keyboard shortcut: Space to click
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                handleClick();
+            }
+        });
+
+        // Initialize
+        window.onload = function() {
+            updateDisplay();
+            updateStats();
+            renderHistory();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Generator - ToolShed Neo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+        }
+        .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+        h1 { font-size: 1.8rem; font-weight: 800; }
+        .desc { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-bottom: 24px; }
+        
+        .gradient-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            position: relative;
+            overflow: hidden;
+        }
+        .gradient-preview .gradient-code {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .color-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .color-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .color-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .color-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .color-group input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+        }
+        .color-group input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group select,
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .control-group input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+            padding: 0;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+        }
+        .range-value {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 2px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 32px rgba(99,102,241,0.3); 
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin: 12px 0 16px 0;
+        }
+        .preset-item {
+            aspect-ratio: 2/1;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .preset-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .preset-item .preset-label {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        
+        .back { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: rgba(255,255,255,0.3); 
+            text-decoration: none; 
+        }
+        .back:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🌈</span>
+        <h1>Gradient Generator</h1>
+        <p class="desc">Create beautiful CSS gradients with ease</p>
+        
+        <div class="gradient-preview" id="gradientPreview">
+            <span class="gradient-code" id="gradientCode">linear-gradient(135deg, #6366f1, #a855f7)</span>
+        </div>
+        
+        <div class="color-inputs">
+            <div class="color-group">
+                <label>Color 1</label>
+                <input type="color" id="color1" value="#6366f1" onchange="updateGradient()">
+                <input type="text" id="color1Text" value="#6366f1" oninput="updateFromText()">
+            </div>
+            <div class="color-group">
+                <label>Color 2</label>
+                <input type="color" id="color2" value="#a855f7" onchange="updateGradient()">
+                <input type="text" id="color2Text" value="#a855f7" oninput="updateFromText()">
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Direction</label>
+                <select id="direction" onchange="updateGradient()">
+                    <option value="to right">→ Right</option>
+                    <option value="to left">← Left</option>
+                    <option value="to bottom">↓ Bottom</option>
+                    <option value="to top">↑ Top</option>
+                    <option value="to bottom right">↘ Bottom Right</option>
+                    <option value="to bottom left">↙ Bottom Left</option>
+                    <option value="to top right">↗ Top Right</option>
+                    <option value="to top left">↖ Top Left</option>
+                    <option value="135deg" selected>135° (Diagonal)</option>
+                    <option value="45deg">45°</option>
+                    <option value="90deg">90°</option>
+                    <option value="180deg">180°</option>
+                    <option value="270deg">270°</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Type</label>
+                <select id="gradientType" onchange="updateGradient()">
+                    <option value="linear" selected>Linear</option>
+                    <option value="radial">Radial</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="preset-grid" id="presetGrid"></div>
+        
+        <button class="btn" onclick="randomGradient()">🎲 Random Gradient</button>
+        <button class="btn-secondary" onclick="copyGradient()">📋 Copy CSS Code</button>
+        
+        <a href="../index.html" class="back">← Back to all tools</a>
+    </div>
+
+    <script>
+        const presets = [
+            { c1: '#6366f1', c2: '#a855f7', name: 'Purple' },
+            { c1: '#f472b6', c2: '#ec4899', name: 'Pink' },
+            { c1: '#3b82f6', c2: '#06b6d4', name: 'Blue' },
+            { c1: '#10b981', c2: '#34d399', name: 'Green' },
+            { c1: '#f59e0b', c2: '#f97316', name: 'Orange' },
+            { c1: '#ef4444', c2: '#dc2626', name: 'Red' },
+            { c1: '#8b5cf6', c2: '#d946ef', name: 'Violet' },
+            { c1: '#14b8a6', c2: '#06b6d4', name: 'Teal' },
+            { c1: '#fbbf24', c2: '#f59e0b', name: 'Yellow' },
+            { c1: '#6366f1', c2: '#8b5cf6', name: 'Indigo' },
+            { c1: '#ec4899', c2: '#f472b6', name: 'Rose' },
+            { c1: '#06b6d4', c2: '#3b82f6', name: 'Cyan' }
+        ];
+
+        function updateGradient() {
+            const color1 = document.getElementById('color1').value;
+            const color2 = document.getElementById('color2').value;
+            const direction = document.getElementById('direction').value;
+            const type = document.getElementById('gradientType').value;
+            
+            document.getElementById('color1Text').value = color1;
+            document.getElementById('color2Text').value = color2;
+            
+            let gradient;
+            if (type === 'linear') {
+                gradient = `linear-gradient(${direction}, ${color1}, ${color2})`;
+            } else {
+                gradient = `radial-gradient(circle, ${color1}, ${color2})`;
+            }
+            
+            document.getElementById('gradientPreview').style.background = gradient;
+            document.getElementById('gradientCode').textContent = gradient;
+        }
+
+        function updateFromText() {
+            const color1 = document.getElementById('color1Text').value;
+            const color2 = document.getElementById('color2Text').value;
+            
+            if (/^#([0-9a-fA-F]{6})$/.test(color1)) {
+                document.getElementById('color1').value = color1;
+            }
+            if (/^#([0-9a-fA-F]{6})$/.test(color2)) {
+                document.getElementById('color2').value = color2;
+            }
+            updateGradient();
+        }
+
+        function randomGradient() {
+            const randomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('color1').value = randomColor();
+            document.getElementById('color2').value = randomColor();
+            
+            const directions = ['to right', 'to left', 'to bottom', 'to top', '135deg', '45deg', '90deg'];
+            const randomDir = directions[Math.floor(Math.random() * directions.length)];
+            document.getElementById('direction').value = randomDir;
+            
+            const types = ['linear', 'radial'];
+            document.getElementById('gradientType').value = types[Math.floor(Math.random() * types.length)];
+            
+            updateGradient();
+        }
+
+        function copyGradient() {
+            const code = document.getElementById('gradientCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Gradient CSS copied: ' + code);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ Gradient CSS copied: ' + code);
+            });
+        }
+
+        function initPresets() {
+            const grid = document.getElementById('presetGrid');
+            presets.forEach(preset => {
+                const item = document.createElement('div');
+                item.className = 'preset-item';
+                item.style.background = `linear-gradient(135deg, ${preset.c1}, ${preset.c2})`;
+                item.innerHTML = `<span class="preset-label">${preset.name}</span>`;
+                item.onclick = () => {
+                    document.getElementById('color1').value = preset.c1;
+                    document.getElementById('color2').value = preset.c2;
+                    document.getElementById('direction').value = '135deg';
+                    document.getElementById('gradientType').value = 'linear';
+                    updateGradient();
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        // Initialize
+        initPresets();
+        updateGradient();
+    </script>
+</body>
+</html>
