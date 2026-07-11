@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <!-- logo.png as favicon and main logo -->
+  <link rel="icon" href="logo.png" type="image/png">
   <title>ToolShed · 120+ instruments</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,6 +72,24 @@
       justify-content: center;
       padding: 2rem 1.5rem;
       text-align: center;
+    }
+    /* ----- header with logo ----- */
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .header-logo img {
+      height: 60px;
+      width: auto;
+      filter: drop-shadow(0 0 20px rgba(62,230,224,0.15));
+      transition: transform 0.3s ease;
+    }
+    .header-logo img:hover {
+      transform: scale(1.08) rotate(-2deg);
     }
     .badge-pulse {
       display: inline-block;
@@ -320,6 +339,7 @@
       .feature-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
       .btn-primary, .btn-secondary { padding: 0.7rem 1.6rem; font-size: 0.9rem; }
       .footer-note { flex-direction: column; align-items: center; gap: 0.2rem; }
+      .header-logo img { height: 44px; }
     }
   </style>
 </head>
@@ -340,8 +360,11 @@
 
   <!-- main content -->
   <div class="content">
-    <!-- badge -->
-    <div class="badge-pulse">✦ 120+ instruments · zero backend</div>
+    <!-- header with logo + badge -->
+    <div class="header-logo">
+      <img src="logo.png" alt="ToolShed logo" />
+      <span class="badge-pulse" style="margin-bottom:0;">✦ 120+ instruments · zero backend</span>
+    </div>
 
     <!-- brand -->
     <h1 class="brand-giant">ToolShed</h1>
@@ -357,10 +380,10 @@
       <span>🔮 <span class="num">zero</span> tracking</span>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA: both links now point to app.html -->
     <div class="cta-group">
-      <a href="#" class="btn-primary" onclick="event.preventDefault(); alert('🚀 ToolShed Launch – dashboard ready');">🚀 Launch ToolShed</a>
-      <a href="#" class="btn-secondary" onclick="event.preventDefault(); alert('◉ Exploring instruments … 120+ available');">◉ Explore instruments</a>
+      <a href="app.html" class="btn-primary">🚀 Launch ToolShed</a>
+      <a href="app.html" class="btn-secondary">◉ Explore instruments</a>
     </div>
 
     <!-- feature grid -->
@@ -401,7 +424,7 @@
       document.querySelectorAll('.btn-primary, .btn-secondary, .feature-card').forEach(el => {
         el.addEventListener('click', function(e) {
           if (this.classList.contains('feature-card')) {
-            // subtle ripple on feature cards
+            e.preventDefault();
             this.style.transition = 'all 0.1s ease';
             this.style.transform = 'scale(0.96)';
             setTimeout(() => { this.style.transform = ''; }, 120);
@@ -427,11 +450,6 @@
         ribbon.style.background = glow + ', rgba(12, 15, 24, 0.6)';
       });
 
-      // console greeting with style
-      console.log('%c🛸 ToolShed · 120+ instruments ready', 'font-size:18px; font-weight:bold; color:#3ee6e0;');
-      console.log('%c✨ zero backend · AI augmented · immersive UI', 'font-size:14px; color:#9aa3be;');
-      console.log('🔗 interactive landing → dashboard ready');
-
       // floating shape micro-interaction
       const shapes = document.querySelectorAll('.shape');
       shapes.forEach((shape, i) => {
@@ -446,6 +464,10 @@
         });
       });
 
+      // console greeting
+      console.log('%c🛸 ToolShed · 120+ instruments ready', 'font-size:18px; font-weight:bold; color:#3ee6e0;');
+      console.log('%c✨ zero backend · AI augmented · immersive UI', 'font-size:14px; color:#9aa3be;');
+      console.log('🔗 landing → app.html (dashboard)');
     })();
   </script>
 </body>
