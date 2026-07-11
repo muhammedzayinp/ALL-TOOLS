@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="logo.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
   <title>ToolShed · 120+ instruments</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,6 @@
       font-family: 'Space Grotesk', sans-serif;
       overflow-x: hidden;
     }
-    /* ---- cosmic background layers ---- */
     .bg-void {
       position: fixed;
       inset: 0;
@@ -28,35 +27,40 @@
       inset: 0;
       z-index: 1;
       background-image: 
-        linear-gradient(rgba(62, 230, 224, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(62, 230, 224, 0.04) 1px, transparent 1px);
+        linear-gradient(rgba(62, 230, 224, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62, 230, 224, 0.05) 1px, transparent 1px);
       background-size: 60px 60px;
       pointer-events: none;
+      opacity: 0.6;
     }
     .glow-orb {
       position: fixed;
       border-radius: 50%;
-      filter: blur(120px);
+      filter: blur(130px);
       pointer-events: none;
       z-index: 1;
     }
-    .glow-orb.cyan { width: 600px; height: 600px; background: rgba(62,230,224,0.08); top: -10%; right: -5%; }
-    .glow-orb.magenta { width: 500px; height: 500px; background: rgba(255,61,138,0.06); bottom: -10%; left: -5%; }
+    .glow-orb.cyan { width: 700px; height: 700px; background: rgba(62,230,224,0.10); top: -15%; right: -10%; animation: pulseGlow 8s infinite alternate; }
+    .glow-orb.magenta { width: 600px; height: 600px; background: rgba(255,61,138,0.08); bottom: -15%; left: -10%; animation: pulseGlow 10s infinite alternate-reverse; }
+    .glow-orb.gold { width: 400px; height: 400px; background: rgba(255,176,32,0.05); top: 40%; left: 50%; transform: translate(-50%, -50%); animation: pulseGlow 12s infinite alternate; }
+    @keyframes pulseGlow {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
     .scan-line {
       position: fixed;
       inset: 0;
       z-index: 2;
       pointer-events: none;
-      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 6px);
     }
     .vignette {
       position: fixed;
       inset: 0;
       z-index: 2;
       pointer-events: none;
-      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
     }
-    /* ---- main content ---- */
     .content {
       position: relative;
       z-index: 10;
@@ -70,43 +74,54 @@
     }
     .badge-pulse {
       display: inline-block;
-      background: rgba(62,230,224,0.08);
-      border: 1px solid rgba(62,230,224,0.25);
+      background: rgba(62,230,224,0.06);
+      border: 1px solid rgba(62,230,224,0.2);
       border-radius: 100px;
-      padding: 0.4rem 1.4rem;
+      padding: 0.4rem 1.6rem;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: #3ee6e0;
-      backdrop-filter: blur(4px);
-      margin-bottom: 2rem;
+      backdrop-filter: blur(8px);
+      margin-bottom: 1.8rem;
       animation: pulseBorder 2.4s infinite;
+      box-shadow: 0 0 20px rgba(62,230,224,0.05);
     }
     @keyframes pulseBorder {
       0%, 100% { border-color: rgba(62,230,224,0.25); box-shadow: 0 0 12px rgba(62,230,224,0.05); }
-      50% { border-color: rgba(62,230,224,0.6); box-shadow: 0 0 30px rgba(62,230,224,0.15); }
+      50% { border-color: rgba(62,230,224,0.7); box-shadow: 0 0 40px rgba(62,230,224,0.2); }
     }
     .brand-giant {
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
-      font-size: clamp(3rem, 12vw, 7rem);
+      font-size: clamp(3.5rem, 13vw, 7.5rem);
       line-height: 1;
-      background: linear-gradient(135deg, #ffffff 0%, #3ee6e0 40%, #ff3d8a 80%, #ffb020 100%);
+      background: linear-gradient(135deg, #ffffff 0%, #3ee6e0 35%, #ff3d8a 70%, #ffb020 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-shadow: 0 0 80px rgba(62,230,224,0.15);
+      text-shadow: 0 0 100px rgba(62,230,224,0.2);
       letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.2rem;
+      transform: scale(1);
+      transition: transform 0.3s ease;
+    }
+    .brand-giant:hover {
+      transform: scale(1.02);
     }
     .brand-sub {
       font-size: clamp(1rem, 3vw, 1.8rem);
       font-weight: 400;
-      color: #7c869e;
-      letter-spacing: 0.08em;
+      color: #9aa3be;
+      letter-spacing: 0.12em;
       margin-bottom: 1.5rem;
       font-family: 'Space Grotesk', sans-serif;
+      background: rgba(0,0,0,0.2);
+      padding: 0.2rem 1.2rem;
+      border-radius: 40px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.02);
     }
     .brand-sub strong {
       color: #e8ecf6;
@@ -121,11 +136,17 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
       color: #7c869e;
-      background: rgba(12, 15, 24, 0.5);
-      backdrop-filter: blur(8px);
-      padding: 0.8rem 2.2rem;
+      background: rgba(12, 15, 24, 0.6);
+      backdrop-filter: blur(12px);
+      padding: 0.8rem 2.6rem;
       border-radius: 60px;
       border: 1px solid rgba(120, 145, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+    }
+    .stats-ribbon:hover {
+      border-color: rgba(62,230,224,0.3);
+      box-shadow: 0 8px 48px rgba(62,230,224,0.08);
     }
     .stats-ribbon span { display: flex; align-items: center; gap: 8px; }
     .stats-ribbon .num {
@@ -133,7 +154,7 @@
       font-weight: 700;
       font-size: 1rem;
       background: rgba(62,230,224,0.08);
-      padding: 0.1rem 0.6rem;
+      padding: 0.1rem 0.7rem;
       border-radius: 20px;
       border: 1px solid rgba(62,230,224,0.15);
     }
@@ -141,7 +162,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1rem;
+      gap: 1.2rem;
       margin-top: 1rem;
     }
     .btn-primary {
@@ -149,26 +170,37 @@
       border: none;
       color: #050609;
       font-weight: 600;
-      padding: 0.8rem 2.6rem;
+      padding: 0.9rem 2.8rem;
       border-radius: 60px;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-family: 'Space Grotesk', sans-serif;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
       box-shadow: 0 0 30px rgba(62,230,224,0.2);
       letter-spacing: 0.02em;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
     }
-    .brand-giant {
-  margin: 0;
-  padding: 0;
-}
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 60px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent, rgba(62,230,224,0.3));
+      filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .btn-primary:hover::after {
+      opacity: 1;
+    }
     .btn-primary:hover {
-      transform: scale(1.04) translateY(-3px);
-      box-shadow: 0 0 50px rgba(62,230,224,0.35);
+      transform: scale(1.05) translateY(-4px);
+      box-shadow: 0 0 60px rgba(62,230,224,0.4);
     }
     .btn-secondary {
       background: rgba(12, 15, 24, 0.6);
@@ -176,47 +208,50 @@
       border: 1px solid rgba(120, 145, 255, 0.2);
       color: #e8ecf6;
       font-weight: 500;
-      padding: 0.8rem 2.2rem;
+      padding: 0.9rem 2.4rem;
       border-radius: 60px;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-family: 'Space Grotesk', sans-serif;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.3s ease;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .btn-secondary:hover {
       border-color: #3ee6e0;
-      background: rgba(62,230,224,0.05);
-      transform: translateY(-2px);
+      background: rgba(62,230,224,0.08);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
     .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
       width: 100%;
-      max-width: 800px;
+      max-width: 850px;
       margin: 3rem auto 1.5rem;
     }
     .feature-card {
-      background: rgba(12, 15, 24, 0.4);
-      backdrop-filter: blur(4px);
+      background: rgba(12, 15, 24, 0.3);
+      backdrop-filter: blur(8px);
       border: 1px solid rgba(120, 145, 255, 0.06);
-      border-radius: 24px;
-      padding: 1.2rem 0.8rem;
-      transition: all 0.25s ease;
+      border-radius: 28px;
+      padding: 1.4rem 0.8rem;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
       text-align: center;
       cursor: default;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
     .feature-card:hover {
-      border-color: rgba(62,230,224,0.2);
-      background: rgba(62,230,224,0.03);
-      transform: translateY(-6px);
+      border-color: rgba(62,230,224,0.3);
+      background: rgba(62,230,224,0.05);
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(62,230,224,0.08);
     }
-    .feature-card .icon { font-size: 2rem; margin-bottom: 6px; display: block; }
-    .feature-card .label { font-size: 0.75rem; color: #7c869e; font-family: 'JetBrains Mono', monospace; }
+    .feature-card .icon { font-size: 2.4rem; margin-bottom: 8px; display: block; filter: drop-shadow(0 0 8px rgba(62,230,224,0.1)); }
+    .feature-card .label { font-size: 0.8rem; color: #7c869e; font-family: 'JetBrains Mono', monospace; }
     .feature-card .label strong { color: #e8ecf6; font-weight: 500; }
 
     .floating-shapes {
@@ -229,36 +264,62 @@
     .shape {
       position: absolute;
       border-radius: 50%;
-      background: rgba(62,230,224,0.03);
+      background: rgba(62,230,224,0.02);
       border: 1px solid rgba(62,230,224,0.04);
       animation: float 18s infinite alternate ease-in-out;
     }
-    .shape:nth-child(1) { width: 300px; height: 300px; top: 10%; left: -5%; animation-duration: 22s; }
-    .shape:nth-child(2) { width: 200px; height: 200px; bottom: 15%; right: -2%; animation-duration: 16s; animation-delay: -4s; background: rgba(255,61,138,0.02); border-color: rgba(255,61,138,0.04); }
-    .shape:nth-child(3) { width: 400px; height: 400px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-duration: 30s; border-color: rgba(255,176,32,0.03); }
+    .shape:nth-child(1) { width: 350px; height: 350px; top: 5%; left: -8%; animation-duration: 24s; }
+    .shape:nth-child(2) { width: 250px; height: 250px; bottom: 10%; right: -5%; animation-duration: 18s; animation-delay: -5s; background: rgba(255,61,138,0.02); border-color: rgba(255,61,138,0.04); }
+    .shape:nth-child(3) { width: 450px; height: 450px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-duration: 32s; border-color: rgba(255,176,32,0.02); }
     @keyframes float {
       0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(30px, -40px) scale(1.05); }
+      100% { transform: translate(40px, -50px) scale(1.08); }
     }
 
     .footer-note {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       color: #3a4055;
       letter-spacing: 0.08em;
-      margin-top: 3.5rem;
+      margin-top: 4rem;
       border-top: 1px solid rgba(120,145,255,0.05);
-      padding-top: 1.8rem;
+      padding-top: 2rem;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     .footer-note a { color: #3a4055; text-decoration: none; transition: color 0.2s; }
     .footer-note a:hover { color: #3ee6e0; }
 
+    .prompt-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #4a5268;
+      margin-top: 1.2rem;
+      letter-spacing: 0.04em;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem 1.6rem;
+      border-radius: 40px;
+      border: 1px solid rgba(255,255,255,0.02);
+      backdrop-filter: blur(4px);
+      transition: all 0.3s ease;
+    }
+    .prompt-hint:hover {
+      border-color: rgba(62,230,224,0.1);
+      color: #8a94b0;
+    }
+    .prompt-hint span {
+      color: #3ee6e0;
+    }
+
     @media (max-width: 640px) {
-      .stats-ribbon { font-size: 0.6rem; padding: 0.6rem 1.2rem; gap: 0.8rem; }
+      .stats-ribbon { font-size: 0.6rem; padding: 0.6rem 1.4rem; gap: 0.6rem 1.2rem; }
       .feature-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-      .btn-primary, .btn-secondary { padding: 0.6rem 1.6rem; font-size: 0.9rem; }
+      .btn-primary, .btn-secondary { padding: 0.7rem 1.6rem; font-size: 0.9rem; }
+      .footer-note { flex-direction: column; align-items: center; gap: 0.2rem; }
     }
   </style>
 </head>
@@ -268,6 +329,7 @@
   <div class="grid-lines"></div>
   <div class="glow-orb cyan"></div>
   <div class="glow-orb magenta"></div>
+  <div class="glow-orb gold"></div>
   <div class="floating-shapes">
     <div class="shape"></div>
     <div class="shape"></div>
@@ -281,12 +343,11 @@
     <!-- badge -->
     <div class="badge-pulse">✦ 120+ instruments · zero backend</div>
 
-    <!-- brand with logo -->
-  <h1 class="brand-giant">ToolShed</h1>
-</div>
-<div class="brand-sub">
-  <strong>AI‑ready</strong> · every channel combined
-</div>
+    <!-- brand -->
+    <h1 class="brand-giant">ToolShed</h1>
+    <div class="brand-sub">
+      <strong>AI‑ready</strong> · every channel combined
+    </div>
 
     <!-- stats ribbon -->
     <div class="stats-ribbon">
@@ -296,13 +357,13 @@
       <span>🔮 <span class="num">zero</span> tracking</span>
     </div>
 
-    <!-- CTA: links directly to app.html (the main dashboard) -->
+    <!-- CTA -->
     <div class="cta-group">
-      <a href="app.html" class="btn-primary">🚀 Launch ToolShed</a>
-      <a href="app.html" class="btn-secondary">◉ Explore instruments</a>
+      <a href="#" class="btn-primary" onclick="event.preventDefault(); alert('🚀 ToolShed Launch – dashboard ready');">🚀 Launch ToolShed</a>
+      <a href="#" class="btn-secondary" onclick="event.preventDefault(); alert('◉ Exploring instruments … 120+ available');">◉ Explore instruments</a>
     </div>
 
-    <!-- feature grid (taste of BharatGPT style) -->
+    <!-- feature grid -->
     <div class="feature-grid">
       <div class="feature-card">
         <span class="icon">🧠</span>
@@ -322,31 +383,69 @@
       </div>
     </div>
 
-    <!-- subtle prompt hint -->
-    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #3a4055; margin-top: 0.8rem; letter-spacing: 0.04em; background: rgba(0,0,0,0.2); padding: 0.4rem 1.2rem; border-radius: 40px; border: 1px solid rgba(255,255,255,0.02);">
-      <span style="color: #3ee6e0;">◈</span>  Hello and welcome! I'm here to guide you.
+    <!-- prompt hint -->
+    <div class="prompt-hint">
+      <span>◈</span>  Hello and welcome! I'm here to guide you.
     </div>
 
     <div class="footer-note">
-      <span>🛸 ToolShed · 2026 · built with intent</span><br>
-      <span style="font-size:0.55rem; opacity:0.5;">no server, no cookies · open source</span>
+      <span>🛸 ToolShed · 2026 · built with intent</span>
+      <span style="opacity:0.6;">no server, no cookies · open source</span>
     </div>
   </div>
 
-  <!-- tiny interaction: pulse on any btn -->
+  <!-- interactive enhancements -->
   <script>
     (function(){
-      // add a subtle glow follow on mousemove (optional)
-      document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
-        btn.addEventListener('mouseenter', (e) => {
-          btn.style.transition = 'all 0.2s ease';
+      // button haptic feedback
+      document.querySelectorAll('.btn-primary, .btn-secondary, .feature-card').forEach(el => {
+        el.addEventListener('click', function(e) {
+          if (this.classList.contains('feature-card')) {
+            // subtle ripple on feature cards
+            this.style.transition = 'all 0.1s ease';
+            this.style.transform = 'scale(0.96)';
+            setTimeout(() => { this.style.transform = ''; }, 120);
+          }
         });
       });
 
-      // small console greeting
-      console.log('🛸 ToolShed · 120+ instruments ready');
-      console.log('✨ zero backend · AI augmented');
-      console.log('🔗 landing page → app.html');
+      // mouse parallax effect on brand
+      const brand = document.querySelector('.brand-giant');
+      document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 6;
+        const y = (e.clientY / window.innerHeight - 0.5) * 6;
+        brand.style.transform = `translate(${x*0.3}px, ${y*0.2}px) scale(1.02)`;
+      });
+
+      // dynamic glow on stats ribbon
+      const ribbon = document.querySelector('.stats-ribbon');
+      document.addEventListener('mousemove', (e) => {
+        const rect = ribbon.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const glow = `radial-gradient(circle at ${x*100}% ${y*100}%, rgba(62,230,224,0.06), transparent 70%)`;
+        ribbon.style.background = glow + ', rgba(12, 15, 24, 0.6)';
+      });
+
+      // console greeting with style
+      console.log('%c🛸 ToolShed · 120+ instruments ready', 'font-size:18px; font-weight:bold; color:#3ee6e0;');
+      console.log('%c✨ zero backend · AI augmented · immersive UI', 'font-size:14px; color:#9aa3be;');
+      console.log('🔗 interactive landing → dashboard ready');
+
+      // floating shape micro-interaction
+      const shapes = document.querySelectorAll('.shape');
+      shapes.forEach((shape, i) => {
+        shape.addEventListener('mouseenter', () => {
+          shape.style.transition = 'all 0.6s ease';
+          shape.style.transform = 'scale(1.1) rotate(4deg)';
+          shape.style.borderColor = 'rgba(62,230,224,0.15)';
+        });
+        shape.addEventListener('mouseleave', () => {
+          shape.style.transform = '';
+          shape.style.borderColor = '';
+        });
+      });
+
     })();
   </script>
 </body>
